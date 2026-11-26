@@ -8,7 +8,7 @@ function fakeContext(){
   return {imageSmoothingEnabled:false,putImageData(){},drawImage(){}};
 }
 class FakeElement {
-  constructor(tag){this.tagName=tag;this.children=[];this.listeners={};this.style={};this.value="";this.textContent="";this.id="";}
+  constructor(tag){this.tagName=tag;this.children=[];this.listeners={};let display="";this.style={set cssText(value){this._cssText=value;const match=/display:([^;]+)/.exec(value);if(match)display=match[1];},get cssText(){return this._cssText||"";},get display(){return display;},set display(value){display=value;}};this.value="";this.textContent="";this.id="";}
   append(...items){for(const item of items){this.children.push(item);if(this.tagName==="select"&&item.tagName==="optgroup"&&!this.value&&item.children[0])this.value=item.children[0].value;}}
   appendChild(item){this.children.push(item);return item;}
   addEventListener(name,fn){(this.listeners[name]??=[]).push(fn);}
