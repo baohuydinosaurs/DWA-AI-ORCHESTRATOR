@@ -2,7 +2,7 @@ import { createFrame, clearFrame, createFx, composite } from "../vendor/pixelfx/
 import { PIXELFX_EFFECTS, PIXELFX_IDS } from "./pixelfx-registry.js";
 
 const SCALE = 1;
-const MAX_ACTIVE = 40;
+const MAX_ACTIVE = 20;
 const active = [];
 const shortIndex = new Map();
 for (const id of PIXELFX_IDS) {
@@ -73,13 +73,15 @@ function play(idOrType, options = {}) {
   const imageData = new ImageData(pixels,width,height);
   const x = Number.isFinite(options.x) ? options.x : 1200;
   const y = Number.isFinite(options.y) ? options.y : 700;
-  const instance = createFx(mod,{
+  const fxOptions = {
     x: origin[0], y: origin[1],
     seed: Math.floor(Math.random()*2147483646)+1,
     flip: options.flip ?? (Number.isFinite(options.tx) && options.tx < x),
-    angle: options.angle || 0,
-    palette: paletteFor(options.color)
-  });
+    angle: options.angle || 0
+  };
+  const customPalette = paletteFor(options.color);
+  if (customPalette) fxOptions.palette = customPalette;
+  const instance = createFx(mod,fxOptions);
   const maxLife = Number.isFinite(options.life) ? Math.max(.25,options.life/60) : 2.4;
   active.push({id,fx:instance,frame,canvas,outCtx,pixels,imageData,x,y,originX:origin[0],originY:origin[1],age:0,maxLife,loop:!!mod.meta?.loop});
   while(active.length>MAX_ACTIVE) { active[0].fx.stop(); active.shift(); }
