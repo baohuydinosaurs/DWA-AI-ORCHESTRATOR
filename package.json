@@ -9,7 +9,8 @@
     "test": "node --test",
     "master:plan": "node src/master-plan.mjs",
     "game:inspect": "node scripts/inspect-game-source.mjs",
-    "game:preview": "node scripts/build-ai-preview.mjs"
+    "game:preview": "node scripts/build-ai-preview.mjs",
+    "policy:validate": "node scripts/validate-policy-bundle.mjs"
   },
   "engines": {
     "node": ">=20"
