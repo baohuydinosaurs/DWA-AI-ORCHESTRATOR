@@ -71,10 +71,12 @@ for (const relativePath of files) {
     "render3D",
     "init3D"
   ];
+  report.inlineScriptTail = html.slice(html.lastIndexOf("</script>") - 2400, html.lastIndexOf("</script>"));
   report.integrationSnippets = Object.fromEntries(integrationHooks.map((name) => {
     const pattern = new RegExp(`function\\s+${name}\\s*\\([^)]*\\)\\s*\\{`);
     const match = pattern.exec(html);
-    return [name, match ? html.slice(match.index, match.index + 900) : null];
+    const snippetLength = name === "stepCombat" ? 4200 : name === "createDinosaurRoster" ? 2400 : name === "triggerDinoSkill" ? 1800 : 900;
+    return [name, match ? html.slice(match.index, match.index + snippetLength) : null];
   }));
   console.log(JSON.stringify(report, null, 2));
 }
