@@ -20,4 +20,11 @@ jobs:
       - run: npm test
       - run: node --check src/ai-worker.mjs
       - run: npm run master:plan
-      - run: node -e "const p=require('./.runtime/master-plan.json'); if(p.workerCount!==100 || p.teamLeads.length!==10) process.exit(1); console.log('Master plan verified: 100 worker identities, 10 team leads.')"
+      - name: Verify generated Master AI plan
+        run: |
+          node --input-type=module -e '
+            import { readFile } from "node:fs/promises";
+            const plan = JSON.parse(await readFile(".runtime/master-plan.json", "utf8"));
+            if (plan.workerCount !== 100 || plan.teamLeads.length !== 10) process.exit(1);
+            console.log("Master plan verified:", plan.workerCount, "worker identities and", plan.teamLeads.length, "team leads.");
+          '
