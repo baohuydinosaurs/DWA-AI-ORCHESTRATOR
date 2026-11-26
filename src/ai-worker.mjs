@@ -53,7 +53,7 @@ try {
         if (typeof part?.text === "string") return part.text;
         if (typeof part?.content === "string") return part.content;
         return "";
-      }).join("\\n")
+      }).join("\n")
     : "";
   const responseOutputText = Array.isArray(payload?.output)
     ? payload.output
@@ -61,7 +61,7 @@ try {
         .flatMap((item) => Array.isArray(item.content) ? item.content : [])
         .filter((part) => part?.type === "output_text" || typeof part?.text === "string")
         .map((part) => part.text || "")
-        .join("\\n")
+        .join("\n")
     : "";
   const answerCandidates = [
     message?.content,
