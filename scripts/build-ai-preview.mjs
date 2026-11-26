@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { Script } from "node:vm";
 
 const root = resolve(new URL("..", import.meta.url).pathname);
 const sources = [
@@ -10,7 +11,6 @@ const sources = [
 
 const bridge = `
   // DWA AI policy bridge. Policies are local data; no network call occurs in the frame loop.
-  const DWA_AI_POLICIES = new Map();
   window.DWA_AI = Object.freeze({
     setPolicy(dinoId, policy, workerId = "manual-policy") {
       if (dinoId === undefined || dinoId === null || !policy || typeof policy !== "object") {
@@ -99,9 +99,15 @@ export function integrateGameHtml(html) {
 
   let output = html.replace(
     stepMarker,
-    "  const DWA_AI_POLICIES = new Map();\n\n" + stepMarker
+    "  const DWA_AI_POLICIES = new Map();\\n\\n" + stepMarker
   );
 
+  const stepEndMarker = "  function checkMatchEnded() {";
+  const stepStart = output.indexOf(stepMarker);
+  const stepEnd = output.indexOf(stepEndMarker, stepStart);
+  if (stepEnd < 0) throw new Error("Could not locate end of stepCombat.");
+
+  let stepSection = output.slice(stepStart, stepEnd);
   const nearestBlock = `      let nearest = enemies[0];
       let bestDist = Infinity;
       for (let en of enemies) {
@@ -118,24 +124,26 @@ export function integrateGameHtml(html) {
       } else if (aiPolicy?.targetMode === "strongest") {
         nearest = enemies.reduce((best, candidate) => candidate.atk > best.atk ? candidate : best);
       }`;
-  if (!output.includes(nearestBlock)) throw new Error("Combat target-selection block was not found.");
-  output = output.replace(nearestBlock, policyTargetBlock);
+  if (!stepSection.includes(nearestBlock)) throw new Error("Combat target-selection block was not found.");
+  stepSection = stepSection.replace(nearestBlock, policyTargetBlock);
 
   const distanceMarker = "      const dist = Math.max(1, Math.hypot(dx, dy));";
-  output = output.replace(
+  if (!stepSection.includes(distanceMarker)) throw new Error("Combat distance calculation was not found.");
+  stepSection = stepSection.replace(
     distanceMarker,
     distanceMarker + `
       const retreating = aiPolicy?.tactic === "evasive" &&
         d.hp / Math.max(1, d.maxHp) <= aiPolicy.retreatBelowHpRatio;`
   );
 
-  output = output.replace(
+  if (!/const spd = [^;]+;/.test(stepSection)) throw new Error("Combat speed calculation was not found.");
+  stepSection = stepSection.replace(
     /const spd = ([^;]+);/,
-    "const spd = ($1) * (aiPolicy?.tactic === \"aggressive\" ? 1.15 : 1);"
+    "const spd = ($1) * (aiPolicy?.tactic === \\"aggressive\\" ? 1.15 : 1);"
   );
   const movementMarker = "      if (dist > 38) {";
-  if (!output.includes(movementMarker)) throw new Error("Combat movement block was not found.");
-  output = output.replace(
+  if (!stepSection.includes(movementMarker)) throw new Error("Combat movement block was not found.");
+  stepSection = stepSection.replace(
     movementMarker,
     `      if (retreating) {
         d.vx = -(dx / dist) * spd;
@@ -145,19 +153,29 @@ export function integrateGameHtml(html) {
       } else if (dist > 38) {`
   );
 
-  output = output.replace(
-    "      triggerDinoSkill(d, enemies);",
-    "      const preferredSkill = aiPolicy?.skillPriority.find((skillId) => d.movePool.includes(skillId));\n      triggerDinoSkill(d, enemies, preferredSkill);"
+  const skillCall = "      triggerDinoSkill(d, enemies);";
+  if (!stepSection.includes(skillCall)) throw new Error("Combat skill invocation was not found.");
+  stepSection = stepSection.replace(
+    skillCall,
+    "      const preferredSkill = aiPolicy?.skillPriority.find((skillId) => d.movePool.includes(skillId));\\n      triggerDinoSkill(d, enemies, preferredSkill);"
   );
-  output = output.replace(
-    "  function triggerDinoSkill(caster, livingEnemies) {",
+  output = output.slice(0, stepStart) + stepSection + output.slice(stepEnd);
+
+  const skillStart = output.indexOf(skillMarker);
+  const skillEnd = output.indexOf(stepMarker, skillStart);
+  if (skillEnd < 0) throw new Error("Could not locate triggerDinoSkill body.");
+  let skillSection = output.slice(skillStart, skillEnd);
+  skillSection = skillSection.replace(
+    skillMarker,
     "  function triggerDinoSkill(caster, livingEnemies, preferredSkillId = null) {"
   );
-  output = output.replace(
-    "    const moveId = pick(caster.movePool);",
+  const randomSkill = "    const moveId = pick(caster.movePool);";
+  if (!skillSection.includes(randomSkill)) throw new Error("Random skill selection was not found.");
+  skillSection = skillSection.replace(
+    randomSkill,
     "    const moveId = preferredSkillId && caster.movePool.includes(preferredSkillId) ? preferredSkillId : pick(caster.movePool);"
   );
-
+  output = output.slice(0, skillStart) + skillSection + output.slice(skillEnd);
   const end = output.lastIndexOf(closeMarker);
   output = output.slice(0, end) + bridge + "\n  " + output.slice(end);
   return output;
