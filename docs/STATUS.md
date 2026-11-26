@@ -11,12 +11,16 @@
 - Có cổng tích hợp: tương thích, test riêng, hồi quy toàn hệ thống và không xung đột.
 - Định nghĩa nhà vô địch là bản tổng hợp các tính năng được xác minh, không phải bản mã của một AI duy nhất.
 - Unit tests bổ sung cho lịch 60 phút, giữ tính năng ngoài thứ hạng và điều kiện tích hợp.
+- Có module nền ghi hình WebM bằng MediaRecorder, lưu metadata theo từng chặng; không tự bật camera/micro.
+- Có unit tests mô phỏng recorder để kiểm tra tạo blob, metadata, timeslice và tên tệp.
+- Có tài liệu `docs/RECORDING.md` quy định lưu video cả các chặng và bằng chứng của worker bị loại.
 
 ## Chưa được xác nhận
 - Chưa có 100 tiến trình AI thực sự đang chạy.
 - Gemini API từng trả HTTP 503; chưa có suy luận AI thành công được xác minh.
 - Chưa tích hợp source game HTML vào workspace riêng.
-- Chưa chạy kiểm thử gameplay/trình duyệt/Android.
+- Chưa gắn recorder vào giao diện game/dashboard; chưa có video thi đấu thực tế được ghi.
+- Chưa chạy kiểm thử gameplay/trình duyệt/Android; cần xác minh MediaRecorder/WebM và lưu trữ trên Android mục tiêu.
 - Chưa có bản phát hành game hoàn chỉnh.
 
 ## Cổng kế tiếp
