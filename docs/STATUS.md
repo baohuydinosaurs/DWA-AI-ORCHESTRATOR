@@ -23,6 +23,9 @@
 - Chưa chạy kiểm thử gameplay/trình duyệt/Android; cần xác minh MediaRecorder/WebM và lưu trữ trên Android mục tiêu.
 - Chưa có bản phát hành game hoàn chỉnh.
 
+- Có task queue JSON bền vững theo tiến trình, lease/claim, retry khi lease hết hạn, event log, checkpoint và restore; đã thêm unit tests.
+- Queue hiện dùng khóa thư mục một-writer; không được dùng như hàng đợi phân tán nhiều runner độc lập. Trước khi mở rộng worker song song trên nhiều máy cần chuyển sang SQLite/DB giao dịch.
+
 ## Cổng kế tiếp
 1. Chờ GitHub Actions xác nhận test mới.
 2. Bổ sung kho lưu feature registry và hàng đợi/checkpoint bền vững.
