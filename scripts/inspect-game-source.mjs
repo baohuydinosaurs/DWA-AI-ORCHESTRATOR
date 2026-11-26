@@ -1,5 +1,6 @@
 import { readFile, stat } from "node:fs/promises";
 import { basename, resolve } from "node:path";
+import { createHash } from "node:crypto";
 
 const files = [
   "BAOHUY_Dinosaur_War_Arena_Enhanced.html",
@@ -17,9 +18,12 @@ function collect(source, pattern, limit = 20) {
     .slice(0, limit);
 }
 
+const sources = new Map();
+
 for (const relativePath of files) {
   const path = resolve(relativePath);
   const [html, info] = await Promise.all([readFile(path, "utf8"), stat(path)]);
+  sources.set(relativePath, html);
   const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, " ").trim() ?? null;
   const scripts = collect(html, /<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi, 40);
   const stylesheets = collect(html, /<link\b[^>]*\bhref=["']([^"']+\.css(?:\?[^"']*)?)["'][^>]*>/gi, 40);
@@ -57,3 +61,48 @@ for (const relativePath of files) {
   };
   console.log(JSON.stringify(report, null, 2));
 }
+
+const [leftName, rightName] = files;
+const left = sources.get(leftName);
+const right = sources.get(rightName);
+let firstDifference = 0;
+while (firstDifference < Math.min(left.length, right.length) && left[firstDifference] === right[firstDifference]) {
+  firstDifference += 1;
+}
+let suffixLength = 0;
+while (
+  suffixLength < left.length - firstDifference &&
+  suffixLength < right.length - firstDifference &&
+  left[left.length - 1 - suffixLength] === right[right.length - 1 - suffixLength]
+) {
+  suffixLength += 1;
+}
+let changedRanges = 0;
+let inDifference = false;
+const firstRanges = [];
+const scanLength = Math.max(left.length, right.length);
+for (let index = firstDifference; index < scanLength - suffixLength; index += 1) {
+  const differs = left[index] !== right[index];
+  if (differs && !inDifference) {
+    changedRanges += 1;
+    if (firstRanges.length < 8) firstRanges.push(index);
+  }
+  inDifference = differs;
+}
+console.log(JSON.stringify({
+  comparison: [leftName, rightName],
+  identical: left === right,
+  sha256: {
+    [leftName]: createHash("sha256").update(left).digest("hex"),
+    [rightName]: createHash("sha256").update(right).digest("hex")
+  },
+  firstDifferenceIndex: firstDifference,
+  commonPrefixCharacters: firstDifference,
+  commonSuffixCharacters: suffixLength,
+  changedRanges,
+  firstChangedOffsets: firstRanges,
+  contextAtFirstDifference: {
+    [leftName]: left.slice(Math.max(0, firstDifference - 180), firstDifference + 320),
+    [rightName]: right.slice(Math.max(0, firstDifference - 180), firstDifference + 320)
+  }
+}, null, 2));
