@@ -4,8 +4,17 @@ import assert from "node:assert/strict";
 const sourcePath="BAOHUY_Dinosaur_War_Arena_VFX_Shader_Audio.html";
 const outputPath="artifacts/Dinosaur_War_Arena_PixelFX_Integrated.html";
 const bundlePath="artifacts/pixelfx.bundle.js";
+const sourcePathOut="artifacts/PIXELFX-244-CORE-SOURCE.js";
+const registryPath="src/pixelfx-registry.js";
 let html=await readFile(sourcePath,"utf8");
 const bundle=await readFile(bundlePath,"utf8");
+const registry=await readFile(registryPath,"utf8");
+const effectPaths=[...registry.matchAll(/from "\.\.\/vendor\/pixelfx\/(src\/fx\/[^"]+\.js)"/g)].map(match=>match[1]);
+assert.equal(effectPaths.length,244,"Expected exactly 244 upstream effect source paths.");
+const sourceUrls=effectPaths.map(path=>"https://raw.githubusercontent.com/patch-gg/pixelfx/main/"+path);
+const sourceHeader="// Dinosaur War Arena · PixelFX 244 · bundled core runtime + upstream source URL index\n// Upstream: https://github.com/patch-gg/pixelfx · MIT license; retain upstream notices.\n// Source catalog: https://github.com/patch-gg/pixelfx/blob/main/docs/CATALOG.md\n// Each URL below points to one original effect module. Runtime dependencies are bundled below.\nglobalThis.DWA_PIXELFX_SOURCE_URLS = Object.freeze("+JSON.stringify(sourceUrls,null,2)+");\n";
+await mkdir("artifacts",{recursive:true});
+await writeFile(sourcePathOut,sourceHeader+bundle+"\\n","utf8");
 const three=await readFile("vendor/three-r128.min.js","utf8");
 const threeLicense=await readFile("vendor/THREE-LICENSE.txt","utf8");
 const threeTag='<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>';
@@ -44,9 +53,9 @@ html=html.replace("</body>",noticeBlock+"</body>");
 await mkdir("artifacts",{recursive:true});
 await writeFile(outputPath,html,"utf8");
 await writeFile("artifacts/PIXELFX-BUILD-REPORT.json",JSON.stringify({
-  output:outputPath,baseSource:sourcePath,effectCount:244,categories:21,
+  output:outputPath,sourceBundle:sourcePathOut,baseSource:sourcePath,effectCount:244,categories:21,sourceUrlCount:sourceUrls.length,
   bundledBytes:Buffer.byteLength(bundle),htmlBytes:Buffer.byteLength(html),
   integrations:["2D combat effects","all-244 effect preview picker","MIT license and NOTICE embedded"],
   threeD:"Existing native Three.js effects are retained; PixelFX itself is a 2D pixel-art renderer."
 },null,2)+"\n");
-console.log("Built "+outputPath+" ("+Buffer.byteLength(html)+" bytes); 244 effects bundled.");
+console.log("Built "+outputPath+" and "+sourcePathOut+"; 244 effect URLs embedded.");
