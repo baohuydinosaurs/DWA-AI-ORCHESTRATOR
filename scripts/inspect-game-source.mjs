@@ -72,7 +72,7 @@ for (const relativePath of files) {
     }
     return [term, { count: html.split(term).length - 1, samples: positions }];
   }));
-  report.threeDUiLabels = collect(html, /<(?:button|option|label)[^>]*>[\\s\\S]{0,160}?(?:3D|3-D|WebGL|camera|perspective)[\\s\\S]{0,80}?<\\/(?:button|option|label)>/gi, 30);
+  report.threeDUiLabels = [...html.matchAll(/<(?:button|option|label)\\b[^>]*>[\\s\\S]{0,240}?<\\/(?:button|option|label)>/gi)].map((match) => match[0]).filter((value) => /3D|3-D|WebGL|camera|perspective/i.test(value)).slice(0, 30);
   const integrationHooks = [
     "createDinosaurRoster",
     "stepCombat",
