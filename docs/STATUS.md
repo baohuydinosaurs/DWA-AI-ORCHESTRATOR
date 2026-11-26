@@ -1,31 +1,34 @@
 # DWA AI Orchestrator — trạng thái triển khai
 
-## Đã triển khai trong repository
-- Khóa quy định dự án trong `docs/DWA-CORE-DIRECTIVE.md`: yêu cầu kỹ thuật, giới hạn quyền Master AI, quy tắc không tự thêm loài, bảo vệ bản gốc, chính sách không phát sinh phí.
-- Lưu thể lệ cuộc thi có cấu trúc trong `config/tournament-rules.json`: 100 → 20 → 8 → 4 → 2 → 1 và thang điểm 100.
-- Giữ 10 nhóm chuyên môn, 10 vị trí mỗi nhóm; sinh 100 ID worker duy nhất.
-- Thêm Master Orchestrator nền tảng: xác thực luật, lập kế hoạch, phân công worker theo chuyên môn và kiểm tra cấu trúc báo cáo.
-- Thêm lệnh `npm run master:plan` để sinh kế hoạch vào `.runtime/master-plan.json`.
-- Thêm unit tests cho luật thi, kế hoạch Master, phân công và xác thực kết quả.
+## Đã triển khai
+- Quy định cốt lõi: `docs/DWA-CORE-DIRECTIVE.md`.
+- 100 worker identities thuộc 10 nhóm chuyên môn; registry không giả nhận chúng là tiến trình AI đang chạy.
+- Master Orchestrator kiểm tra luật, tạo kế hoạch, phân công tác vụ và xác thực báo cáo.
+- Cuộc thi 60 phút được cấu hình thành 7 chặng: chuẩn bị 10', vòng ngoài 15', vòng trong 10', tứ kết 8', bán kết 8', chung kết 6', công bố 3'.
+- Nhánh thi đấu vẫn dùng các mốc 100 → 20 → 8 → 4 → 2 → 1.
+- Thứ hạng chỉ quyết định suất đi tiếp trong nhánh; không tự động xóa/loại bỏ tính năng có giá trị.
+- Có chức năng ghi nhận tính năng độc đáo, giữ nguồn gốc worker, bằng chứng tệp và kiểm thử.
+- Có cổng tích hợp: tương thích, test riêng, hồi quy toàn hệ thống và không xung đột.
+- Định nghĩa nhà vô địch là bản tổng hợp các tính năng được xác minh, không phải bản mã của một AI duy nhất.
+- Unit tests bổ sung cho lịch 60 phút, giữ tính năng ngoài thứ hạng và điều kiện tích hợp.
 
-## Trạng thái cần phân biệt
-- Master Orchestrator hiện là bộ điều phối/quy tắc chạy bằng Node.js; chưa phải một mô hình AI tự suy luận.
-- Master AI model inference vẫn chưa cấu hình. ChatGPT có thể đảm nhận vai trò Master AI trong phiên làm việc; GitHub giữ luật, registry, kế hoạch và trạng thái có thể kiểm tra.
-- 100 worker hiện là 100 danh tính/slot có vai trò, không phải 100 tiến trình AI đang chạy.
-- Gemini worker đã gọi API thật nhưng các lần gần nhất thất bại HTTP 503 do model quá tải; chưa có báo cáo AI thành công.
-- Chưa kết nối hai HTML game vào worker workspace, chưa thực hiện kiểm thử gameplay hoặc thiết bị Android.
+## Chưa được xác nhận
+- Chưa có 100 tiến trình AI thực sự đang chạy.
+- Gemini API từng trả HTTP 503; chưa có suy luận AI thành công được xác minh.
+- Chưa tích hợp source game HTML vào workspace riêng.
+- Chưa chạy kiểm thử gameplay/trình duyệt/Android.
+- Chưa có bản phát hành game hoàn chỉnh.
 
-## Cổng triển khai tiếp theo
-1. Xác nhận GitHub Actions chạy xanh trên commit mới nhất.
-2. Chạy `npm run master:plan` và xác minh đủ 100 worker records.
-3. Bổ sung task queue/checkpoint bền vững và kiểm thử khôi phục.
-4. Chọn adapter suy luận miễn phí khả dụng; không tự bật paid usage.
-5. Chạy 1 worker đầu-cuối, kiểm tra nội dung và artifact.
-6. Mở rộng 2 → 5 → 10 → 100 chỉ khi cổng trước đạt.
+## Cổng kế tiếp
+1. Chờ GitHub Actions xác nhận test mới.
+2. Bổ sung kho lưu feature registry và hàng đợi/checkpoint bền vững.
+3. Xác minh mô hình AI miễn phí khả dụng, không dùng dịch vụ trả phí.
+4. Chạy một worker đầu-cuối trên bản sao source game; xác minh artifact và test.
+5. Mở rộng theo cổng 2 → 5 → 10 → 100.
 
-## Nguyên tắc an toàn
-- Không ghi API key hoặc token vào Git.
-- Không phát sinh chi phí hoặc bật dịch vụ trả phí nếu chưa được chủ dự án cho phép.
-- Không sửa hai file HTML gốc; chỉ làm trên bản sao.
-- Không tuyên bố worker chạy thật khi mới chỉ có hồ sơ registry.
-- Mỗi báo cáo phải ghi rõ các bước đã thực sự kiểm tra và giới hạn còn lại.
+## Bất biến
+- Không tự thêm loài khủng long.
+- Không ghi đè hai HTML gốc.
+- Không thay đổi thể lệ/yêu cầu kỹ thuật đã chốt.
+- Không dùng tiền hoặc bật paid usage khi chưa được chủ dự án cho phép.
+- Không công bố tính năng tích hợp nếu chưa có bằng chứng kiểm thử.
