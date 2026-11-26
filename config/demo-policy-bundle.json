@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "policies": [
+    {
+      "dinoId": 0,
+      "workerId": "demo-policy-not-live-ai-001",
+      "policy": {
+        "targetMode": "weakest",
+        "tactic": "aggressive",
+        "retreatBelowHpRatio": 0.3,
+        "skillPriority": [
+          "buff-power"
+        ]
+      }
+    },
+    {
+      "dinoId": 1,
+      "workerId": "demo-policy-not-live-ai-002",
+      "policy": {
+        "targetMode": "nearest",
+        "tactic": "balanced",
+        "retreatBelowHpRatio": 0.3,
+        "skillPriority": [
+          "heal-aoe",
+          "buff-power"
+        ]
+      }
+    },
+    {
+      "dinoId": 2,
+      "workerId": "demo-policy-not-live-ai-003",
+      "policy": {
+        "targetMode": "strongest",
+        "tactic": "evasive",
+        "retreatBelowHpRatio": 0.45,
+        "skillPriority": [
+          "heal-aoe"
+        ]
+      }
+    },
+    {
+      "dinoId": 3,
+      "workerId": "demo-policy-not-live-ai-004",
+      "policy": {
+        "targetMode": "weakest",
+        "tactic": "balanced",
+        "retreatBelowHpRatio": 0.3,
+        "skillPriority": [
+          "buff-power",
+          "heal-aoe"
+        ]
+      }
+    }
+  ]
+}
