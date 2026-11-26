@@ -69,6 +69,7 @@ try {
 
   if (!answer) {
     const choice = payload?.choices?.[0];
+    const message = choice?.message;
     const details = {
       contentType,
       responseId: payload?.id ?? null,
