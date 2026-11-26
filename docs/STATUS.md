@@ -8,6 +8,8 @@
 - Master Plan xác nhận **100 worker identities / 10 team leads**; đây không phải 100 model inference đang chạy.
 - Artifact `dwa-ai-integration-preview` đã được upload thành công (16,298,476 bytes; chưa hết hạn tại thời điểm xác minh): https://github.com/baohuydinosaurs/DWA-AI-ORCHESTRATOR/actions/runs/45774050941
 - Log ghi rõ: `Model inference remains unconfigured.` Do đó chưa thể tuyên bố AI worker thật đã suy luận thành công hoặc policy đã được tạo bởi Gemini.
+- Cập nhật tiếp theo: run #101 (ID: `45775817122`, commit `5b5e28da`) cũng hoàn tất `success`; **43/43 tests passed**, 0 failed. Artifact mới: https://github.com/baohuydinosaurs/DWA-AI-ORCHESTRATOR/actions/runs/45775817122 (16,298,476 bytes; chưa hết hạn tại thời điểm xác minh).
+- Đã kiểm tra lần chạy AI worker thật #7 (ID: `45762042731`): secret `GEMINI_API_KEY` được nạp vào bước chạy (giá trị được che), request tới Gemini nhưng model `gemini-3.7-flash` trả HTTP 503 do high demand sau 5 lần thử. Đây là lỗi khả dụng phía model/provider, không phải lỗi cấp quyền GitHub Actions. Chưa có inference thành công; không tiếp tục retry cùng model một cách lặp lại.
 
 ## Đã triển khai và có bằng chứng
 - Quy định cốt lõi: `docs/DWA-CORE-DIRECTIVE.md`.
