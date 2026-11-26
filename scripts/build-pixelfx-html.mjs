@@ -38,7 +38,7 @@ const bundledScript="<script>\n"+bundle+"\n</script>\n";
 html=html.slice(0,mainScript)+bundledScript+html.slice(mainScript);
 
 const escapeHtml=s=>s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-const noticeBlock="\n<section hidden id=\"pixelfx-third-party-license\"><pre>"+escapeHtml(license+"\n\n"+notice)+"</pre></section>\n";
+const noticeBlock="\n<section hidden id=\"pixelfx-third-party-license\"><pre>"+escapeHtml(license+"\n\n"+notice+"\n\nThree.js r128 MIT License\n"+threeLicense)+"</pre></section>\n";
 assert.ok(html.includes("</body>"),"Missing body close.");
 html=html.replace("</body>",noticeBlock+"</body>");
 await mkdir("artifacts",{recursive:true});
