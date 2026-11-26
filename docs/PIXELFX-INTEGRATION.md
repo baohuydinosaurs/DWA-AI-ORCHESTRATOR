@@ -34,3 +34,17 @@ The automated tests use a Node.js fake canvas context. They do not prove that th
 7. Confirm the original game controls, audio, recording and battle logic still work.
 
 Known design limit: at most 20 PixelFX instances are kept active by the current runtime to bound memory and rendering load. PixelFX remains a 2D pixel-art effect layer; it does not replace the game's 3D models or native 3D effects.
+
+
+## Two-file release bundle (2026-11-26)
+
+- GitHub Actions run #15: https://github.com/baohuydinosaurs/DWA-AI-ORCHESTRATOR/actions/runs/45781841006
+- Conclusion: success.
+- Test suite: 47 passed, 0 failed.
+- Release artifact ID: 15099000855; archive size 9,215,632 bytes; expires 2026-12-10.
+- Contains:
+  - `Dinosaur_War_Arena_PixelFX_Integrated.html`: single-file game HTML with PixelFX and Three.js bundled inline.
+  - `PIXELFX-244-CORE-SOURCE.js`: bundled PixelFX core runtime plus an array of all 244 upstream raw source URLs at `globalThis.DWA_PIXELFX_SOURCE_URLS`.
+  - `PIXELFX-BUILD-REPORT.json`.
+- Automated verification includes all 244 effects imported, updated, drawn and composited; picker renders 244 options, opens/closes, and starts an effect. Runtime pool capped at 20 concurrent effects.
+- Still not verified: visual/interactive behavior on a physical Android device, sustained-battle frame rate and memory. Automated tests run in Node with a fake canvas/DOM.
