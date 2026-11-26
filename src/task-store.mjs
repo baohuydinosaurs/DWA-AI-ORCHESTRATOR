@@ -89,6 +89,23 @@ export class TaskStore {
     });
   }
 
+  async renewLease(taskId, workerId) {
+    return this.#withLock(async () => {
+      const state=await this.#read();
+      const task=state.tasks.find((item)=>item.taskId===taskId);
+      if (!task) throw new Error(`Unknown taskId: ${taskId}`);
+      if (task.status!=="running" || task.lease?.owner!==workerId) {
+        throw new Error("Task lease cannot be renewed by this worker.");
+      }
+      const now=this.now();
+      task.lease.expiresAt=now+this.leaseMs;
+      task.lease.renewedAt=new Date(now).toISOString();
+      state.events.push({type:"task-lease-renewed",taskId,workerId,at:new Date(now).toISOString()});
+      await this.#write(state);
+      return task.lease.expiresAt;
+    });
+  }
+
   async complete(taskId, workerId, result) {
     return this.#finish(taskId,workerId,{status:"completed",result,error:null});
   }
