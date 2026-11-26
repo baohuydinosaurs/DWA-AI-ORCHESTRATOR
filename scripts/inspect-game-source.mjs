@@ -70,8 +70,7 @@ for (const relativePath of files) {
       positions.push(html.slice(Math.max(0, at - 180), Math.min(html.length, at + 320)));
       from = at + term.length;
     }
-    return [term, { count: countMatches(html, new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\  const integrationHooks = [
-"), "g")), samples: positions }];
+    return [term, { count: html.split(term).length - 1, samples: positions }];
   }));
   report.threeDUiLabels = collect(html, /<(?:button|option|label)[^>]*>[\\s\\S]{0,160}?(?:3D|3-D|WebGL|camera|perspective)[\\s\\S]{0,80}?<\\/(?:button|option|label)>/gi, 30);
   const integrationHooks = [
