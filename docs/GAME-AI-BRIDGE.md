@@ -19,6 +19,7 @@ Cho phép nạp chính sách chiến thuật do worker tạo vào game mà khôn
 - `window.DWA_AI.getSnapshot()`: trả bản sao read-only của trạng thái trận đấu và roster.
 - `window.DWA_AI.getPolicyAssignments()`: xem danh sách gán policy và nguồn worker.
 - `window.DWA_AI.clearPolicies()`: xóa toàn bộ policy đang gán.
+- Preview có nút **Nạp AI policy** để chọn file JSON trực tiếp trên điện thoại và nút **Xóa policy** để trở về chiến thuật mặc định.
 
 ## Schema policy
 
