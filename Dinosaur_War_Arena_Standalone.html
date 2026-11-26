@@ -768,6 +768,21 @@
  .agp-globe-wrap{width:min(35vw,66vh,300px)!important;height:min(35vw,66vh,300px)!important;}
 }
 
+
+  button, select, input, textarea, [role="button"] {
+    pointer-events: auto !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(56,189,248,.22);
+  }
+  .left-sidebar, .top-arena-bar {
+    position: relative;
+    z-index: 40;
+    pointer-events: auto;
+  }
+  .left-sidebar button, .top-arena-bar button {
+    position: relative;
+    z-index: 41;
+  }
 </style>
 </head>
 <body>
@@ -4652,6 +4667,14 @@ void main() {
   };
 
   function spawnNativePixelFx(type, opts = {}) {
+    try {
+      spawnNativePixelFxUnsafe(type, opts);
+    } catch (error) {
+      console.warn("PixelFX effect skipped without stopping the game:", type, error);
+    }
+  }
+
+  function spawnNativePixelFxUnsafe(type, opts = {}) {
     const lib = window.DWAPixelFX;
     if (!lib || !lib.effects) return;
     const id = PIXELFX_ALIASES[type] || Object.keys(lib.effects).find(k => k.split("/").pop() === type);
@@ -7880,10 +7903,23 @@ void main() {
     resizeViewport();
     fit2DCameraToArena();
     setup2DCameraControls();
-    init3D();
+    try {
+      init3D();
+    } catch (error) {
+      console.error('DWA 3D initialization failed; continuing in 2D mode.', error);
+      try { if (renderer3D) renderer3D.dispose(); } catch (_) {}
+      const viewport3d = $('viewport3d');
+      if (viewport3d) viewport3d.innerHTML = '';
+      scene3D = null; camera3D = null; renderer3D = null;
+      terrainMesh3D = null; waterPlane3D = null; envGroup3D = null;
+      weatherPts3D = null; auroraMesh3D = null; lightningLight3D = null;
+      $('btnMode3D').disabled = true;
+      $('btnMode3D').textContent = '🌍 3D không khả dụng trên thiết bị này';
+    }
     applyAreaFilter('nature', false);
     refreshCountBadge();
     createDinosaurRoster();
+    window.__DWA_GAME_BOOTED__ = true;
   };
 })();
 </script>
