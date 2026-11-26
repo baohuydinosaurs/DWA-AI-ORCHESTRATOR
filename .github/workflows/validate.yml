@@ -24,6 +24,7 @@ jobs:
       - run: npm run master:plan
       - run: npm run game:inspect
       - run: npm run game:preview
+      - run: npm run policy:validate
       - name: Upload DWA AI integration previews
         if: success()
         uses: actions/upload-artifact@v6
