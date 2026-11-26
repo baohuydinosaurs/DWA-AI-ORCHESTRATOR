@@ -12,7 +12,6 @@ const fixture = `<html><body><script>
   function triggerDinoSkill(caster, livingEnemies) {
     const moveId = pick(caster.movePool);
   }
-  function checkMatchEnded() { return false; }
   function stepCombat(dt) {
     const living = dinos.filter((d) => d.alive);
     for (let d of living) {
@@ -38,6 +37,7 @@ const fixture = `<html><body><script>
       }
     }
   }
+  function checkMatchEnded() { return false; }
 })();
 </script></body></html>`;
 
