@@ -1,12 +1,12 @@
 import { mkdir, writeFile } from "node:fs/promises";
 
-const endpoint = "https://models.github.ai/inference/chat/completions";
-const token = process.env.GITHUB_TOKEN;
+const endpoint = "https://generativelanguage.googleapis.com/v1beta/interactions";
+const apiKey = process.env.GEMINI_API_KEY;
 const prompt = (process.env.DWA_TASK ?? "").trim();
-const model = process.env.DWA_MODEL || "openai/gpt-4o";
+const model = process.env.DWA_MODEL || "gemini-3.8-flash";
 const outputDir = process.env.DWA_OUTPUT_DIR || "artifacts";
 
-if (!token) throw new Error("GITHUB_TOKEN is missing. Run this worker inside the configured GitHub Actions workflow.");
+if (!apiKey) throw new Error("GEMINI_API_KEY is missing. Add it as a repository Actions secret before running this worker.");
 if (!prompt) throw new Error("DWA_TASK is empty. Supply a task using the workflow_dispatch form.");
 if (prompt.length > 12000) throw new Error("DWA_TASK is too long (maximum 12,000 characters).");
 
@@ -17,21 +17,20 @@ try {
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${token}`,
+      "x-goog-api-key": apiKey,
       "Content-Type": "application/json",
       "Accept": "application/json"
     },
     body: JSON.stringify({
       model,
-      messages: [
-        {
-          role: "system",
-          content: "You are one task-focused AI worker for the Dinosaur War Arena software project. Work only on the task supplied by the user. Do not claim to have edited files, run tests, or accessed systems unless the task and tools actually allow it. Return a clear, actionable result in Vietnamese."
-        },
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.2,
-      max_tokens: 2500
+      input: [
+        "You are one task-focused AI worker for the Dinosaur War Arena software project.",
+        "Work only on the task supplied by the user. Do not claim to have edited files, run tests, or accessed systems unless the task and tools actually allow it.",
+        "Return a clear, actionable result in Vietnamese.",
+        "",
+        "USER TASK:",
+        prompt
+      ].join("\n")
     }),
     signal: controller.signal
   });
@@ -42,59 +41,39 @@ try {
 
   if (!response.ok) {
     const detail = payload?.error?.message || payload?.message || raw.slice(0, 1200);
-    throw new Error(`GitHub Models request failed (HTTP ${response.status}): ${detail}`);
+    throw new Error(`Gemini API request failed (HTTP ${response.status}): ${detail}`);
   }
 
-  // Providers may return plain text, content-part arrays, or a Responses-style output.
-  const message = payload?.choices?.[0]?.message;
-  const contentParts = Array.isArray(message?.content)
-    ? message.content.map((part) => {
-        if (typeof part === "string") return part;
-        if (typeof part?.text === "string") return part.text;
-        if (typeof part?.content === "string") return part.content;
-        return "";
-      }).join("\n")
-    : "";
-  const responseOutputText = Array.isArray(payload?.output)
-    ? payload.output
-        .filter((item) => item?.type === "message")
-        .flatMap((item) => Array.isArray(item.content) ? item.content : [])
-        .filter((part) => part?.type === "output_text" || typeof part?.text === "string")
-        .map((part) => part.text || "")
+  const answer = Array.isArray(payload?.steps)
+    ? payload.steps
+        .filter((step) => step?.type === "model_output")
+        .flatMap((step) => Array.isArray(step.content) ? step.content : [])
+        .filter((part) => part?.type === "text" && typeof part.text === "string")
+        .map((part) => part.text)
         .join("\n")
     : "";
-  const answerCandidates = [
-    message?.content,
-    contentParts,
-    payload?.output_text,
-    responseOutputText,
-    message?.refusal
-  ];
-  const answer = answerCandidates.find((value) => typeof value === "string" && value.trim());
 
-  if (!answer) {
-    const choice = payload?.choices?.[0];
+  if (!answer.trim()) {
     const details = {
-      responseId: payload?.id ?? null,
+      interactionId: payload?.id ?? null,
+      status: payload?.status ?? null,
       returnedModel: payload?.model ?? null,
-      finishReason: choice?.finish_reason ?? null,
-      messageKeys: message && typeof message === "object" ? Object.keys(message) : [],
-      choiceCount: Array.isArray(payload?.choices) ? payload.choices.length : null,
-      outputTypes: Array.isArray(payload?.output) ? payload.output.map((item) => item?.type).filter(Boolean) : [],
-      usage: payload?.usage ?? null
+      stepTypes: Array.isArray(payload?.steps) ? payload.steps.map((step) => step?.type).filter(Boolean) : [],
+      outputTypes: Array.isArray(payload?.steps)
+        ? payload.steps.flatMap((step) => Array.isArray(step.content) ? step.content.map((part) => part?.type) : [])
+        : [],
+      error: payload?.error ?? null
     };
-    console.error("Model response contained no extractable text:", JSON.stringify(details));
-    throw new Error(
-      `The model returned HTTP ${response.status} but no readable text. ` +
-      `Inspect the response metadata above; finish_reason=${details.finishReason ?? "n/a"}.`
-    );
+    console.error("Gemini returned no extractable model output:", JSON.stringify(details));
+    throw new Error(`Gemini returned HTTP ${response.status} but no text output. Interaction status: ${details.status ?? "unknown"}.`);
   }
 
   await mkdir(outputDir, { recursive: true });
   const result = {
     workerId: "qa-integration-001",
-    provider: "GitHub Models",
-    model,
+    provider: "Google Gemini API",
+    model: payload.model || model,
+    interactionId: payload.id ?? null,
     completedAt: new Date().toISOString(),
     task: prompt,
     answer: answer.trim(),
@@ -103,7 +82,7 @@ try {
 
   await writeFile(`${outputDir}/worker-result.json`, JSON.stringify(result, null, 2) + "\n");
   await writeFile(`${outputDir}/worker-result.md`,
-    `# DWA AI Worker result\n\n- Worker: ${result.workerId}\n- Provider: ${result.provider}\n- Model: ${result.model}\n- Completed: ${result.completedAt}\n\n## Task\n\n${prompt}\n\n## AI response\n\n${answer.trim()}\n`
+    `# DWA AI Worker result\n\n- Worker: ${result.workerId}\n- Provider: ${result.provider}\n- Model: ${result.model}\n- Interaction: ${result.interactionId ?? "n/a"}\n- Completed: ${result.completedAt}\n\n## Task\n\n${prompt}\n\n## AI response\n\n${answer.trim()}\n`
   );
   console.log("AI inference succeeded.");
   console.log(`Provider: ${result.provider}`);
