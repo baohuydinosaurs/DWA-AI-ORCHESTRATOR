@@ -22,8 +22,9 @@ assert.ok(html.includes(stepNeedle),"Could not locate combat update hook.");
 html=html.replace(stepNeedle,"  function stepCombat(dt) {\n    if (window.DWAPixelFX) window.DWAPixelFX.update(dt / 60);\n    if (specialFxTimer > 0)");
 
 const drawStart=html.indexOf("  function draw2DFX() {");
-const drawEnd=html.indexOf("\n  }\n\n\n  function draw2D()",drawStart);
-assert.ok(drawStart>=0 && drawEnd>drawStart,"Could not locate end of draw2DFX.");
+const nextDraw=html.indexOf("  function draw2D()",drawStart);
+const drawEnd=html.lastIndexOf("\n  }",nextDraw);
+assert.ok(drawStart>=0 && nextDraw>drawStart && drawEnd>drawStart,"Could not locate end of draw2DFX.");
 html=html.slice(0,drawEnd)+"\n    if (window.DWAPixelFX) window.DWAPixelFX.draw(ctx);"+html.slice(drawEnd);
 
 const mainScript=html.lastIndexOf("<script>");
