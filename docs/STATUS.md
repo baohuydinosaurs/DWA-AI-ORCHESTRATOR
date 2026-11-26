@@ -23,6 +23,10 @@
 - GitHub Actions run #93 SUCCESS: npm tests, game source inspection, build hai preview, policy validation và upload artifact đều thành công.
 - Artifact mới nhất: https://github.com/baohuydinosaurs/DWA-AI-ORCHESTRATOR/actions/runs/45767569807/artifacts/15093110183 (hết hạn dự kiến 2026-12-03).
 
+- Đã kiểm thử runtime bridge bằng browser stub: setPolicy, loadPolicyBundle, snapshot, provenance, từ chối policy sai schema và luồng chọn file JSON trên mobile UI.
+- GitHub Actions run #97 SUCCESS: 43/43 unit tests passed; build cả hai HTML preview và upload artifact thành công.
+- Artifact mới nhất: https://github.com/baohuydinosaurs/DWA-AI-ORCHESTRATOR/actions/runs/45767742042/artifacts/15091674527 (hết hạn dự kiến 2026-12-03).
+
 ## Chưa được xác nhận
 - Chưa có 100 tiến trình AI thực sự đang chạy; 100 worker hiện là 100 danh tính/hồ sơ được đăng ký.
 - Chưa xác minh một lần suy luận Gemini API thành công. API trước đây từng trả HTTP 503; quota/free-tier cần được xác nhận trước khi chạy.
