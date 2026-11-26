@@ -29,6 +29,10 @@ export function createMasterPlan(roles, rules) {
     teamLeads:roles.map((role) => ({id:`${role.id}-lead`,roleId:role.id,roleName:role.name,workerCount:10})),
     workerCount:workers.length,
     tournamentStages:rules.competition.stages,
+    durationMinutes:rules.competition.durationMinutes,
+    schedule:rules.competition.schedule,
+    featureHarvest:rules.featureHarvest,
+    championDefinition:rules.competition.championDefinition,
     scoringTotal:rules.scoring.reduce((sum,item)=>sum+item.points,0),
     executionGates:rules.gates,
     workers
