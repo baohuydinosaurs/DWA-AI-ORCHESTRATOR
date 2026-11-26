@@ -58,22 +58,21 @@ test("empty executor results are rejected and recorded", async (t) => {
 test("renews a long-running task lease while its executor is active",async(t)=>{
   const dir=await mkdtemp(join(tmpdir(),"dwa-runner-heartbeat-"));
   t.after(()=>rm(dir,{recursive:true,force:true}));
-  const store=new TaskStore({filePath:join(dir,"queue.json"),leaseMs:60});
+  const store=new TaskStore({filePath:join(dir,"queue.json"),leaseMs:150});
   await store.enqueue({taskId:"long-task",workerId:"worker-long",roleId:"qa",description:"long operation"});
-  let observedLeaseExpiry=0;
   const result=await runOneTask({
     store,
     workerId:"worker-long",
-    leaseRenewalMs:10,
+    leaseRenewalMs:30,
     executeTask:async()=>{
-      await new Promise(resolve=>setTimeout(resolve,100));
-      observedLeaseExpiry=(await store.snapshot()).tasks[0].lease.expiresAt;
+      await new Promise(resolve=>setTimeout(resolve,280));
       return {ok:true};
     }
   });
   assert.equal(result.status,"completed");
-  assert.ok(observedLeaseExpiry>Date.now(),"lease should have been extended beyond the initial 60ms lease");
-  assert.equal((await store.snapshot()).tasks[0].status,"completed");
+  const state=await store.snapshot();
+  assert.ok(state.events.some((event)=>event.type==="task-lease-renewed"),"heartbeat should persist at least one lease renewal");
+  assert.equal(state.tasks[0].status,"completed");
 });
 
 test("rejects lease renewal by a worker that does not own the task",async(t)=>{
