@@ -178,9 +178,11 @@ export function integrateGameHtml(html) {
   output = output.slice(0, skillStart) + skillSection + output.slice(skillEnd);
   const end = output.lastIndexOf(closeMarker);
   output = output.slice(0, end) + bridge + "\n  " + output.slice(end);
-  const inlineScript = output.match(/<script>([\\s\\S]*?)<\\/script>/i);
+  const inlineStart = output.indexOf("<script>");
+  const inlineEnd = output.indexOf("</script>", inlineStart);
+  const inlineScript = inlineStart >= 0 && inlineEnd > inlineStart ? output.slice(inlineStart + 8, inlineEnd) : null;
   if (!inlineScript) throw new Error("Integrated preview inline script was not found.");
-  new Script(inlineScript[1], { filename: "dwa-ai-preview.js" });
+  new Script(inlineScript, { filename: "dwa-ai-preview.js" });
   return output;
 }
 
