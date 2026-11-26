@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { Script } from "node:vm";
 import { integrateGameHtml } from "./build-ai-preview.mjs";
 
 const fixture = `<html><body><script>
@@ -11,7 +12,7 @@ const fixture = `<html><body><script>
   function triggerDinoSkill(caster, livingEnemies) {
     const moveId = pick(caster.movePool);
   }
-  function stepCombat(dt) {
+  function checkMatchEnded() { return false; }\n  function stepCombat(dt) {
     const living = dinos.filter((d) => d.alive);
     for (let d of living) {
       const enemies = living.filter((o) => o !== d);
