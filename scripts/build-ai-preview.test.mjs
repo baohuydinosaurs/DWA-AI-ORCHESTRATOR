@@ -92,7 +92,7 @@ test("runs policy bridge API with a stub browser and game state",()=>{
     viewMode:"3d",
     dinos:[{id:0,name:"Demo Rex",species:"existing",teamIdx:0,hp:80,maxHp:100,atk:50,x:12,y:20,alive:true,movePool:["buff-power","heal-aoe"]}]
   };
-  new Script("const DWA_AI_POLICIES = new Map();\\n"+getPolicyBridgeSource()).runInNewContext(context);
+  new Script("const DWA_AI_POLICIES = new Map();\n"+getPolicyBridgeSource()).runInNewContext(context);
   const api=context.window.DWA_AI;
   assert.equal(api.setPolicy(0,{targetMode:"weakest",tactic:"aggressive",skillPriority:["buff-power"]},"worker-demo-01"),true);
   assert.equal(api.getPolicyAssignments()[0].workerId,"worker-demo-01");
@@ -119,7 +119,7 @@ test("mobile policy loader reports successful JSON file selection",async()=>{
     body:{appendChild(element){elements.push(element);}}
   };
   const context={Map,Set,Object,Number,String,Array,TypeError,Error,RangeError,JSON,window:{},document,running:false,seconds:0,viewMode:"2d",dinos:[]};
-  new Script("const DWA_AI_POLICIES = new Map();\\n"+getPolicyBridgeSource()).runInNewContext(context);
+  new Script("const DWA_AI_POLICIES = new Map();\n"+getPolicyBridgeSource()).runInNewContext(context);
   const panel=elements[0];
   const input=panel.children[2];
   const status=panel.children[3];
