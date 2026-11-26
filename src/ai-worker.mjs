@@ -3,7 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 const endpoint = "https://generativelanguage.googleapis.com/v1beta/interactions";
 const apiKey = process.env.GEMINI_API_KEY;
 const prompt = (process.env.DWA_TASK ?? "").trim();
-const model = process.env.DWA_MODEL || "gemini-3.8-flash";
+const model = process.env.DWA_MODEL || "gemini-3.7-flash";
 const outputDir = process.env.DWA_OUTPUT_DIR || "artifacts";
 
 if (!apiKey) throw new Error("GEMINI_API_KEY is missing. Add it as a repository Actions secret before running this worker.");
@@ -37,7 +37,7 @@ try {
           "",
           "USER TASK:",
           prompt
-        ].join("\\n")
+        ].join("\n")
       }),
       signal: controller.signal
     });
@@ -72,7 +72,7 @@ try {
         if (typeof part?.text === "string") return part.text;
         if (typeof part?.content === "string") return part.content;
         return "";
-      }).filter(Boolean).join("\\n")
+      }).filter(Boolean).join("\n")
     : "";
   const responseOutputText = Array.isArray(payload?.output)
     ? payload.output
@@ -81,7 +81,7 @@ try {
         .filter((part) => part?.type === "output_text" || typeof part?.text === "string")
         .map((part) => part.text || "")
         .filter(Boolean)
-        .join("\\n")
+        .join("\n")
     : "";
   const streamText = Array.isArray(payload?.streamEvents)
     ? payload.streamEvents.map((event) => {
