@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "competition": {
+    "entrants": 100,
+    "stages": [
+      100,
+      20,
+      8,
+      4,
+      2,
+      1
+    ],
+    "groups": 10,
+    "workersPerGroup": 10
+  },
+  "scoring": [
+    {
+      "id": "visuals",
+      "name": "Đồ họa 2D/3D",
+      "points": 20
+    },
+    {
+      "id": "animation",
+      "name": "Hoạt ảnh",
+      "points": 10
+    },
+    {
+      "id": "environment",
+      "name": "Môi trường",
+      "points": 15
+    },
+    {
+      "id": "combat",
+      "name": "Chiến đấu và kỹ năng",
+      "points": 10
+    },
+    {
+      "id": "vfx-audio",
+      "name": "Hiệu ứng và âm thanh",
+      "points": 10
+    },
+    {
+      "id": "android-performance",
+      "name": "Hiệu năng Android",
+      "points": 10
+    },
+    {
+      "id": "ui-ux",
+      "name": "UI/UX",
+      "points": 5
+    },
+    {
+      "id": "stability",
+      "name": "Độ ổn định",
+      "points": 15
+    },
+    {
+      "id": "architecture",
+      "name": "Kiến trúc và tích hợp",
+      "points": 5
+    }
+  ],
+  "gates": [
+    "1 worker đầu-cuối",
+    "2 worker",
+    "5 worker",
+    "10 worker",
+    "100 worker"
+  ],
+  "costPolicy": "no-paid-usage-without-explicit-owner-approval",
+  "dinosaurPolicy": "add-only-with-owner-provided-image-and-explicit-request"
+}
