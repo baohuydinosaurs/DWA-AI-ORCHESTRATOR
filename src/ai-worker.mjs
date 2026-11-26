@@ -45,9 +45,49 @@ try {
     throw new Error(`GitHub Models request failed (HTTP ${response.status}): ${detail}`);
   }
 
-  const answer = payload?.choices?.[0]?.message?.content;
-  if (typeof answer !== "string" || !answer.trim()) {
-    throw new Error("The model returned no text content. Check the selected model and response format.");
+  // Providers may return plain text, content-part arrays, or a Responses-style output.
+  const message = payload?.choices?.[0]?.message;
+  const contentParts = Array.isArray(message?.content)
+    ? message.content.map((part) => {
+        if (typeof part === "string") return part;
+        if (typeof part?.text === "string") return part.text;
+        if (typeof part?.content === "string") return part.content;
+        return "";
+      }).join("\\n")
+    : "";
+  const responseOutputText = Array.isArray(payload?.output)
+    ? payload.output
+        .filter((item) => item?.type === "message")
+        .flatMap((item) => Array.isArray(item.content) ? item.content : [])
+        .filter((part) => part?.type === "output_text" || typeof part?.text === "string")
+        .map((part) => part.text || "")
+        .join("\\n")
+    : "";
+  const answerCandidates = [
+    message?.content,
+    contentParts,
+    payload?.output_text,
+    responseOutputText,
+    message?.refusal
+  ];
+  const answer = answerCandidates.find((value) => typeof value === "string" && value.trim());
+
+  if (!answer) {
+    const choice = payload?.choices?.[0];
+    const details = {
+      responseId: payload?.id ?? null,
+      returnedModel: payload?.model ?? null,
+      finishReason: choice?.finish_reason ?? null,
+      messageKeys: message && typeof message === "object" ? Object.keys(message) : [],
+      choiceCount: Array.isArray(payload?.choices) ? payload.choices.length : null,
+      outputTypes: Array.isArray(payload?.output) ? payload.output.map((item) => item?.type).filter(Boolean) : [],
+      usage: payload?.usage ?? null
+    };
+    console.error("Model response contained no extractable text:", JSON.stringify(details));
+    throw new Error(
+      `The model returned HTTP ${response.status} but no readable text. ` +
+      `Inspect the response metadata above; finish_reason=${details.finishReason ?? "n/a"}.`
+    );
   }
 
   await mkdir(outputDir, { recursive: true });
