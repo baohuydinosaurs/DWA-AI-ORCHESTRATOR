@@ -23,6 +23,14 @@ jobs:
       - run: node --check src/gemini-adapter.mjs
       - run: npm run master:plan
       - run: npm run game:inspect
+      - run: npm run game:preview
+      - name: Upload DWA AI integration previews
+        if: success()
+        uses: actions/upload-artifact@v6
+        with:
+          name: dwa-ai-integration-preview
+          path: artifacts/dwa-ai-preview/
+          retention-days: 7
       - name: Verify generated Master AI plan
         run: |
           node --input-type=module -e '
