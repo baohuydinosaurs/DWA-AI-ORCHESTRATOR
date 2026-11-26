@@ -20,6 +20,7 @@ jobs:
       - run: npm test
       - run: node --check src/ai-worker.mjs
       - run: node --check src/task-runner.mjs
+      - run: node --check src/gemini-adapter.mjs
       - run: npm run master:plan
       - name: Verify generated Master AI plan
         run: |
