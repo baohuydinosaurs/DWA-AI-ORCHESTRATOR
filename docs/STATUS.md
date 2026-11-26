@@ -18,6 +18,11 @@
   - `BAOHUY_Dinosaur_War_Arena_VFX_Shader_Audio.html`
 - GitHub Actions workflow `Validate DWA Orchestrator`, run #44, đã hoàn tất với kết quả `success` trong khoảng 12 giây. Các bước npm test, kiểm tra cú pháp hai module worker/task-runner và tạo/xác minh kế hoạch Master AI đều thành công.
 
+
+- Task queue đã có gia hạn lease; task runner gửi heartbeat trong khi executor chạy lâu. CI run #50 xác nhận bộ test queue/runner và kiểm tra cú pháp thành công.
+- Bổ sung `src/gemini-adapter.mjs` để đọc đúng phản hồi Gemini Interactions API dạng `steps[].type = "model_output"`, đồng thời giữ tương thích với các dạng phản hồi khác.
+- AI worker chuyển sang yêu cầu stateless (`store: false`) và tách system instruction khỏi nội dung tác vụ. Thay đổi này mới được kiểm tra bằng unit tests/CI; chưa gọi API thật để tránh sử dụng quota/billing khi chưa xác minh chính sách miễn phí.
+
 ## Chưa được xác nhận
 - Chưa có 100 tiến trình AI thực sự đang chạy; 100 worker hiện là 100 danh tính/hồ sơ được đăng ký.
 - Chưa xác minh một lần suy luận Gemini API thành công trong workflow. Trước đây API từng trả HTTP 503.
