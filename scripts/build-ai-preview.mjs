@@ -83,6 +83,44 @@ const bridge = `
       }));
     }
   });
+
+  const dwaPolicyPanel = document.createElement("div");
+  dwaPolicyPanel.setAttribute("aria-label", "DWA AI policy controls");
+  dwaPolicyPanel.style.cssText = "position:fixed;right:12px;bottom:12px;z-index:99999;display:flex;flex-wrap:wrap;gap:6px;align-items:center;max-width:calc(100vw - 24px);padding:8px;background:rgba(8,15,28,.94);border:1px solid rgba(125,211,252,.55);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.4);";
+  const dwaLoadPolicyButton = document.createElement("button");
+  dwaLoadPolicyButton.type = "button";
+  dwaLoadPolicyButton.textContent = "🧠 Nạp AI policy";
+  dwaLoadPolicyButton.style.cssText = "padding:9px 12px;border:0;border-radius:8px;background:#0ea5e9;color:white;font-weight:700;font-size:13px;";
+  const dwaClearPolicyButton = document.createElement("button");
+  dwaClearPolicyButton.type = "button";
+  dwaClearPolicyButton.textContent = "Xóa policy";
+  dwaClearPolicyButton.style.cssText = "padding:9px 12px;border:1px solid #64748b;border-radius:8px;background:#1e293b;color:white;font-size:13px;";
+  const dwaPolicyFileInput = document.createElement("input");
+  dwaPolicyFileInput.type = "file";
+  dwaPolicyFileInput.accept = ".json,application/json";
+  dwaPolicyFileInput.style.display = "none";
+  const dwaPolicyStatus = document.createElement("span");
+  dwaPolicyStatus.setAttribute("role", "status");
+  dwaPolicyStatus.style.cssText = "flex-basis:100%;color:#bae6fd;font:12px/1.35 system-ui,sans-serif;";
+  dwaPolicyStatus.textContent = "Chưa nạp policy — game vẫn dùng AI mặc định.";
+  dwaLoadPolicyButton.addEventListener("click", () => dwaPolicyFileInput.click());
+  dwaClearPolicyButton.addEventListener("click", () => {
+    const removed = window.DWA_AI.clearPolicies();
+    dwaPolicyStatus.textContent = "Đã xóa " + removed + " policy; game trở về chiến thuật mặc định.";
+  });
+  dwaPolicyFileInput.addEventListener("change", async () => {
+    const file = dwaPolicyFileInput.files && dwaPolicyFileInput.files[0];
+    if (!file) return;
+    try {
+      const bundle = JSON.parse(await file.text());
+      const result = window.DWA_AI.loadPolicyBundle(bundle);
+      dwaPolicyStatus.textContent = "Đã nạp " + result.loaded + " policy từ " + file.name + ". Nhấn Bắt đầu để thử.";
+    } catch (error) {
+      dwaPolicyStatus.textContent = "Không nạp được policy: " + error.message;
+    }
+  });
+  dwaPolicyPanel.append(dwaLoadPolicyButton, dwaClearPolicyButton, dwaPolicyFileInput, dwaPolicyStatus);
+  document.body.appendChild(dwaPolicyPanel);
 `;
 
 export function integrateGameHtml(html) {
