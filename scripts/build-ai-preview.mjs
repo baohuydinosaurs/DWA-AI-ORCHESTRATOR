@@ -133,6 +133,8 @@ const bridge = `
   document.body.appendChild(dwaPolicyPanel);
 `;
 
+export function getPolicyBridgeSource() { return bridge; }
+
 export function integrateGameHtml(html) {
   if (typeof html !== "string" || !html.includes("<script>")) {
     throw new Error("Expected a game HTML file with an inline script.");
