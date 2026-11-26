@@ -1,0 +1,34 @@
+name: Build DWA PixelFX single-file release
+
+on:
+  push:
+    branches: [feature/pixelfx-244-integration]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Test all 244 PixelFX modules and DWA modules
+        run: npm test
+      - name: Bundle all PixelFX modules for browser
+        run: npx --yes esbuild@0.25.10 src/pixelfx-entry.js --bundle --format=iife --target=es2020 --minify --outfile=artifacts/pixelfx.bundle.js
+      - name: Build the standalone DWA HTML
+        run: node scripts/build-pixelfx-html.mjs
+      - name: Upload standalone HTML and build report
+        uses: actions/upload-artifact@v6
+        with:
+          name: dwa-pixelfx-single-html
+          path: |
+            artifacts/Dinosaur_War_Arena_PixelFX_Integrated.html
+            artifacts/PIXELFX-BUILD-REPORT.json
+          retention-days: 14
