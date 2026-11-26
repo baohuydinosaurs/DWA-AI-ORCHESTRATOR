@@ -16,7 +16,40 @@ const result = await build({
   legalComments: "none"
 });
 const bundle = result.outputFiles[0].text;
-let html = source;
+
+const originalBoot = `window.onload = () => {
+    resizeViewport();
+    fit2DCameraToArena();
+    setup2DCameraControls();
+    init3D();
+    applyAreaFilter('nature', false);
+    refreshCountBadge();
+    createDinosaurRoster();
+  };`;
+const resilientBoot = `window.onload = () => {
+    resizeViewport();
+    fit2DCameraToArena();
+    setup2DCameraControls();
+    try {
+      init3D();
+    } catch (error) {
+      console.error('DWA 3D initialization failed; continuing in 2D mode.', error);
+      try { if (renderer3D) renderer3D.dispose(); } catch (_) {}
+      const viewport3d = $('viewport3d');
+      if (viewport3d) viewport3d.innerHTML = '';
+      scene3D = null; camera3D = null; renderer3D = null;
+      terrainMesh3D = null; waterPlane3D = null; envGroup3D = null;
+      weatherPts3D = null; auroraMesh3D = null; lightningLight3D = null;
+      $('btnMode3D').disabled = true;
+      $('btnMode3D').textContent = '🌍 3D không khả dụng trên thiết bị này';
+    }
+    applyAreaFilter('nature', false);
+    refreshCountBadge();
+    createDinosaurRoster();
+    window.__DWA_GAME_BOOTED__ = true;
+  };`;
+if (!source.includes(originalBoot)) throw new Error("Original game boot block not found.");
+let html = source.replace(originalBoot, resilientBoot);
 
 const threeTag = /<script\s+src=["']https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/three\.js\/r128\/three\.min\.js["']\s*><\/script>/i;
 if (!threeTag.test(html)) throw new Error("Could not find the original Three.js CDN script tag.");
@@ -43,6 +76,14 @@ const fxRuntime = String.raw`
   };
 
   function spawnNativePixelFx(type, opts = {}) {
+    try {
+      spawnNativePixelFxUnsafe(type, opts);
+    } catch (error) {
+      console.warn("PixelFX effect skipped without stopping the game:", type, error);
+    }
+  }
+
+  function spawnNativePixelFxUnsafe(type, opts = {}) {
     const lib = window.DWAPixelFX;
     if (!lib || !lib.effects) return;
     const id = PIXELFX_ALIASES[type] || Object.keys(lib.effects).find(k => k.split("/").pop() === type);
@@ -164,6 +205,24 @@ if (!html.includes(mainMarker)) throw new Error("Could not find main game script
 html = html.replace(mainMarker, "<script>" + bundle + "</script>\n" + mainMarker);
 
 if (/\<script\s+src=/i.test(html)) throw new Error("Standalone HTML still contains an external script dependency.");
+// Mobile interaction safety: keep controls above the arena canvas and make taps explicit.
+html = html.replace("</style>", `
+  button, select, input, textarea, [role="button"] {
+    pointer-events: auto !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(56,189,248,.22);
+  }
+  .left-sidebar, .top-arena-bar {
+    position: relative;
+    z-index: 40;
+    pointer-events: auto;
+  }
+  .left-sidebar button, .top-arena-bar button {
+    position: relative;
+    z-index: 41;
+  }
+</style>`);
+
 const inlineScripts = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)].map(match => match[1]).filter(code => code.trim());
 for (let i = 0; i < inlineScripts.length; i++) {
   try { new Function(inlineScripts[i]); }
