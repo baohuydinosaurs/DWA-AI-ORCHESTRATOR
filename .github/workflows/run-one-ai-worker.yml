@@ -10,7 +10,7 @@ on:
       model:
         description: "Chỉ dùng model Gemini có hạn mức miễn phí; không nhập OpenAI model"
         required: false
-        default: "gemini-3.8-flash"
+        default: "gemini-3.7-flash"
         type: string
 
 permissions:
