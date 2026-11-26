@@ -139,7 +139,7 @@ export function integrateGameHtml(html) {
   if (!/const spd = [^;]+;/.test(stepSection)) throw new Error("Combat speed calculation was not found.");
   stepSection = stepSection.replace(
     /const spd = ([^;]+);/,
-    "const spd = ($1) * (aiPolicy?.tactic === \\"aggressive\\" ? 1.15 : 1);"
+    `const spd = ($1) * (aiPolicy?.tactic === "aggressive" ? 1.15 : 1);`
   );
   const movementMarker = "      if (dist > 38) {";
   if (!stepSection.includes(movementMarker)) throw new Error("Combat movement block was not found.");
@@ -178,6 +178,9 @@ export function integrateGameHtml(html) {
   output = output.slice(0, skillStart) + skillSection + output.slice(skillEnd);
   const end = output.lastIndexOf(closeMarker);
   output = output.slice(0, end) + bridge + "\n  " + output.slice(end);
+  const inlineScript = output.match(/<script>([\\s\\S]*?)<\\/script>/i);
+  if (!inlineScript) throw new Error("Integrated preview inline script was not found.");
+  new Script(inlineScript[1], { filename: "dwa-ai-preview.js" });
   return output;
 }
 
