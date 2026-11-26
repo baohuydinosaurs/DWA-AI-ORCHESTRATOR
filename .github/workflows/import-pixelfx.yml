@@ -1,0 +1,44 @@
+name: Import PixelFX 244 source modules
+
+on:
+  push:
+    branches:
+      - integration/pixelfx-244-sketchup-assets
+    paths:
+      - .github/workflows/import-pixelfx.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor-pixelfx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout DWA
+        uses: actions/checkout@v4
+        with:
+          ref: integration/pixelfx-244-sketchup-assets
+          fetch-depth: 0
+      - name: Fetch upstream PixelFX source and preserve notices
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/patch-gg/pixelfx.git /tmp/pixelfx
+          mkdir -p vendor/pixelfx
+          cp -R /tmp/pixelfx/src vendor/pixelfx/
+          cp /tmp/pixelfx/LICENSE /tmp/pixelfx/NOTICE.md /tmp/pixelfx/README.md vendor/pixelfx/
+          mkdir -p vendor/pixelfx/docs
+          cp /tmp/pixelfx/docs/CATALOG.md vendor/pixelfx/docs/
+          EFFECT_COUNT=$(grep -c '^import \\* as ' vendor/pixelfx/src/fx/index.js)
+          test "$EFFECT_COUNT" -eq 244
+          echo "Verified PixelFX effect imports: $EFFECT_COUNT"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vendor/pixelfx
+          if git diff --cached --quiet; then
+            echo "PixelFX source already current"
+            exit 0
+          fi
+          git commit -m "Vendor all 244 PixelFX effects with MIT notices"
+          git push origin HEAD:integration/pixelfx-244-sketchup-assets
