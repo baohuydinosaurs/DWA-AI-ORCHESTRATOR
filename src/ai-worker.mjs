@@ -36,36 +36,86 @@ try {
   });
 
   const raw = await response.text();
+  const contentType = response.headers.get("content-type") || "";
   let payload;
-  try { payload = JSON.parse(raw); } catch { payload = { raw }; }
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    // Some compatible inference gateways return SSE or plain text despite HTTP 200.
+    const sseText = raw
+      .split(/\\r?\\n/)
+      .filter((line) => line.startsWith("data:"))
+      .map((line) => line.slice(5).trim())
+      .filter((line) => line && line !== "[DONE]")
+      .map((line) => {
+        try { return JSON.parse(line); } catch { return { text: line }; }
+      });
+    payload = sseText.length ? { streamEvents: sseText } : { raw };
+  }
 
   if (!response.ok) {
     const detail = payload?.error?.message || payload?.message || raw.slice(0, 1200);
-    throw new Error(`Gemini API request failed (HTTP ${response.status}): ${detail}`);
+    throw new Error(`GitHub Models request failed (HTTP ${response.status}): ${detail}`);
   }
 
-  const answer = Array.isArray(payload?.steps)
-    ? payload.steps
-        .filter((step) => step?.type === "model_output")
-        .flatMap((step) => Array.isArray(step.content) ? step.content : [])
-        .filter((part) => part?.type === "text" && typeof part.text === "string")
-        .map((part) => part.text)
-        .join("\n")
+  const message = payload?.choices?.[0]?.message;
+  const contentParts = Array.isArray(message?.content)
+    ? message.content.map((part) => {
+        if (typeof part === "string") return part;
+        if (typeof part?.text === "string") return part.text;
+        if (typeof part?.content === "string") return part.content;
+        return "";
+      }).filter(Boolean).join("\\n")
     : "";
+  const responseOutputText = Array.isArray(payload?.output)
+    ? payload.output
+        .filter((item) => item?.type === "message")
+        .flatMap((item) => Array.isArray(item.content) ? item.content : [])
+        .filter((part) => part?.type === "output_text" || typeof part?.text === "string")
+        .map((part) => part.text || "")
+        .filter(Boolean)
+        .join("\\n")
+    : "";
+  const streamText = Array.isArray(payload?.streamEvents)
+    ? payload.streamEvents.map((event) => {
+        const choice = event?.choices?.[0];
+        const delta = choice?.delta;
+        const content = delta?.content ?? choice?.message?.content ?? event?.text;
+        if (typeof content === "string") return content;
+        if (Array.isArray(content)) return content.map((part) => part?.text || "").join("");
+        return "";
+      }).join("")
+    : "";
+  const answerCandidates = [
+    message?.content,
+    contentParts,
+    payload?.output_text,
+    responseOutputText,
+    streamText,
+    message?.refusal,
+    typeof payload?.raw === "string" && !/^\\s*</.test(payload.raw) ? payload.raw : null
+  ];
+  const answer = answerCandidates.find((value) => typeof value === "string" && value.trim());
 
-  if (!answer.trim()) {
+  if (!answer) {
+    const choice = payload?.choices?.[0];
     const details = {
-      interactionId: payload?.id ?? null,
-      status: payload?.status ?? null,
+      contentType,
+      responseId: payload?.id ?? null,
       returnedModel: payload?.model ?? null,
-      stepTypes: Array.isArray(payload?.steps) ? payload.steps.map((step) => step?.type).filter(Boolean) : [],
-      outputTypes: Array.isArray(payload?.steps)
-        ? payload.steps.flatMap((step) => Array.isArray(step.content) ? step.content.map((part) => part?.type) : [])
-        : [],
-      error: payload?.error ?? null
+      finishReason: choice?.finish_reason ?? null,
+      messageKeys: message && typeof message === "object" ? Object.keys(message) : [],
+      choiceCount: Array.isArray(payload?.choices) ? payload.choices.length : null,
+      outputTypes: Array.isArray(payload?.output) ? payload.output.map((item) => item?.type).filter(Boolean) : [],
+      streamEventCount: Array.isArray(payload?.streamEvents) ? payload.streamEvents.length : 0,
+      rawPreview: typeof payload?.raw === "string" ? payload.raw.slice(0, 800) : null,
+      usage: payload?.usage ?? null
     };
-    console.error("Gemini returned no extractable model output:", JSON.stringify(details));
-    throw new Error(`Gemini returned HTTP ${response.status} but no text output. Interaction status: ${details.status ?? "unknown"}.`);
+    console.error("Model response contained no extractable text:", JSON.stringify(details));
+    throw new Error(
+      `The model returned HTTP ${response.status} but no readable text. ` +
+      `Content-Type=${contentType || "unknown"}; finish_reason=${details.finishReason ?? "n/a"}.`
+    );
   }
 
   await mkdir(outputDir, { recursive: true });
