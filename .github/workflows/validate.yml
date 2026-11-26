@@ -22,6 +22,7 @@ jobs:
       - run: node --check src/task-runner.mjs
       - run: node --check src/gemini-adapter.mjs
       - run: npm run master:plan
+      - run: npm run game:inspect
       - name: Verify generated Master AI plan
         run: |
           node --input-type=module -e '
