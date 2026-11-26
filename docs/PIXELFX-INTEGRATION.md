@@ -7,6 +7,6 @@
 - Game base: `BAOHUY_Dinosaur_War_Arena_VFX_Shader_Audio.html`; original files remain unchanged.
 - Build output: `artifacts/Dinosaur_War_Arena_PixelFX_Integrated.html`.
 
-The PixelFX runtime is bundled into one HTML file. Its 244-effect picker and mapped combat effects run in DWA's 2D canvas renderer. The existing Three.js 3D renderer and its native 3D effects remain intact; PixelFX is a 2D pixel-art effects library, not a 3D dinosaur-model library.
+The PixelFX runtime and Three.js r128 runtime are bundled into one HTML file; no runtime CDN request is needed. Its 244-effect picker and mapped combat effects run in DWA's 2D canvas renderer. The existing Three.js 3D renderer and its native 3D effects remain intact; PixelFX is a 2D pixel-art effects library, not a 3D dinosaur-model library.
 
-The CI workflow checks every effect module by importing it, advancing it, drawing one frame and compositing it, then builds and uploads the single-file HTML artifact. A successful Node smoke test is not a substitute for Android/browser visual testing.
+The CI workflow checks every effect module by importing it, advancing it, drawing one frame and compositing it, then builds and uploads the single-file HTML artifact. The Three.js MIT license is embedded alongside the PixelFX license and notices. A successful Node smoke test is not a substitute for Android/browser visual testing.

@@ -6,8 +6,13 @@ const outputPath="artifacts/Dinosaur_War_Arena_PixelFX_Integrated.html";
 const bundlePath="artifacts/pixelfx.bundle.js";
 let html=await readFile(sourcePath,"utf8");
 const bundle=await readFile(bundlePath,"utf8");
+const threeTag='<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>';
+assert.ok(html.includes(threeTag),"Could not locate the original Three.js CDN tag.");
+html=html.replace(threeTag,"<script>\\n"+three+"\\n</script>");
 const license=await readFile("vendor/pixelfx/LICENSE","utf8");
 const notice=await readFile("vendor/pixelfx/NOTICE.md","utf8");
+const three=await readFile("vendor/three-r128.min.js","utf8");
+const threeLicense=await readFile("vendor/THREE-LICENSE.txt","utf8");
 
 const spawnNeedle="  function spawnPixelFX(type, opts) {\n    fxList.push({";
 assert.ok(html.includes(spawnNeedle),"Could not locate spawnPixelFX hook; refusing to alter source.");
