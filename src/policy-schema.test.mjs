@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { validateCombatPolicy, validatePolicyBundle, serializePolicyBundle } from "./policy-schema.mjs";
 
 test("normalizes defaults into a safe balanced policy",()=>{
@@ -61,4 +62,12 @@ test("serializes only validated bundle data without mutating input",()=>{
   assert.deepEqual(JSON.parse(json).policies[0].policy,{
     targetMode:"nearest",tactic:"balanced",retreatBelowHpRatio:0.3,skillPriority:[]
   });
+});
+
+
+test("validates the checked-in demo bundle used by the mobile preview loader",async()=>{
+  const raw=await readFile(new URL("../config/demo-policy-bundle.json",import.meta.url),"utf8");
+  const bundle=validatePolicyBundle(JSON.parse(raw));
+  assert.equal(bundle.policies.length,4);
+  assert.ok(bundle.policies.every((entry)=>entry.workerId.startsWith("demo-policy-not-live-ai-")));
 });
