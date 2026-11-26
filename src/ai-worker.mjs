@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { extractGeminiText } from "./gemini-adapter.mjs";
 
 const endpoint = "https://generativelanguage.googleapis.com/v1beta/interactions";
 const apiKey = process.env.GEMINI_API_KEY;
@@ -30,14 +31,13 @@ try {
       },
       body: JSON.stringify({
         model,
-        input: [
+        store: false,
+        system_instruction: [
           "You are one task-focused AI worker for the Dinosaur War Arena software project.",
           "Work only on the task supplied by the user. Do not claim to have edited files, run tests, or accessed systems unless the task and tools actually allow it.",
-          "Return a clear, actionable result in Vietnamese.",
-          "",
-          "USER TASK:",
-          prompt
-        ].join("\n")
+          "Return a clear, actionable result in Vietnamese."
+        ].join("\n"),
+        input: prompt
       }),
       signal: controller.signal
     });
@@ -65,44 +65,7 @@ try {
     throw new Error(`Gemini API request failed after ${maxAttempts} attempt(s) (HTTP ${response.status}): ${detail}`);
   }
 
-  const message = payload?.choices?.[0]?.message;
-  const contentParts = Array.isArray(message?.content)
-    ? message.content.map((part) => {
-        if (typeof part === "string") return part;
-        if (typeof part?.text === "string") return part.text;
-        if (typeof part?.content === "string") return part.content;
-        return "";
-      }).filter(Boolean).join("\n")
-    : "";
-  const responseOutputText = Array.isArray(payload?.output)
-    ? payload.output
-        .filter((item) => item?.type === "message")
-        .flatMap((item) => Array.isArray(item.content) ? item.content : [])
-        .filter((part) => part?.type === "output_text" || typeof part?.text === "string")
-        .map((part) => part.text || "")
-        .filter(Boolean)
-        .join("\n")
-    : "";
-  const streamText = Array.isArray(payload?.streamEvents)
-    ? payload.streamEvents.map((event) => {
-        const choice = event?.choices?.[0];
-        const delta = choice?.delta;
-        const content = delta?.content ?? choice?.message?.content ?? event?.text;
-        if (typeof content === "string") return content;
-        if (Array.isArray(content)) return content.map((part) => part?.text || "").join("");
-        return "";
-      }).join("")
-    : "";
-  const answerCandidates = [
-    message?.content,
-    contentParts,
-    payload?.output_text,
-    responseOutputText,
-    streamText,
-    message?.refusal,
-    typeof payload?.raw === "string" && !/^\\s*</.test(payload.raw) ? payload.raw : null
-  ];
-  const answer = answerCandidates.find((value) => typeof value === "string" && value.trim());
+  const answer = extractGeminiText(payload);
 
   if (!answer) {
     const choice = payload?.choices?.[0];
