@@ -1,0 +1,14 @@
+{
+  "name": "dwa-ai-orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Dinosaur War Arena AI worker orchestration foundation",
+  "scripts": {
+    "workers:generate": "node src/worker-registry.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
