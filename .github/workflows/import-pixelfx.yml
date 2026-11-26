@@ -6,6 +6,7 @@ on:
       - integration/pixelfx-244-sketchup-assets
     paths:
       - .github/workflows/import-pixelfx.yml
+      - scripts/build-dwa-standalone.mjs
   workflow_dispatch:
 
 permissions:
