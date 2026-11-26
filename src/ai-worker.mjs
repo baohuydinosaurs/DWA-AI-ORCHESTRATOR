@@ -11,51 +11,58 @@ if (!prompt) throw new Error("DWA_TASK is empty. Supply a task using the workflo
 if (prompt.length > 12000) throw new Error("DWA_TASK is too long (maximum 12,000 characters).");
 
 const controller = new AbortController();
-const timeout = setTimeout(() => controller.abort(), 120_000);
+const timeout = setTimeout(() => controller.abort(), 240_000);
+const retryableStatuses = new Set([429, 500, 502, 503, 504]);
 
 try {
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "x-goog-api-key": apiKey,
-      "Content-Type": "application/json",
-      "Accept": "application/json"
-    },
-    body: JSON.stringify({
-      model,
-      input: [
-        "You are one task-focused AI worker for the Dinosaur War Arena software project.",
-        "Work only on the task supplied by the user. Do not claim to have edited files, run tests, or accessed systems unless the task and tools actually allow it.",
-        "Return a clear, actionable result in Vietnamese.",
-        "",
-        "USER TASK:",
-        prompt
-      ].join("\n")
-    }),
-    signal: controller.signal
-  });
-
-  const raw = await response.text();
-  const contentType = response.headers.get("content-type") || "";
+  let response;
+  let raw = "";
   let payload;
-  try {
-    payload = JSON.parse(raw);
-  } catch {
-    // Some compatible inference gateways return SSE or plain text despite HTTP 200.
-    const sseText = raw
-      .split(/\\r?\\n/)
-      .filter((line) => line.startsWith("data:"))
-      .map((line) => line.slice(5).trim())
-      .filter((line) => line && line !== "[DONE]")
-      .map((line) => {
-        try { return JSON.parse(line); } catch { return { text: line }; }
-      });
-    payload = sseText.length ? { streamEvents: sseText } : { raw };
+  const maxAttempts = 5;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "x-goog-api-key": apiKey,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        input: [
+          "You are one task-focused AI worker for the Dinosaur War Arena software project.",
+          "Work only on the task supplied by the user. Do not claim to have edited files, run tests, or accessed systems unless the task and tools actually allow it.",
+          "Return a clear, actionable result in Vietnamese.",
+          "",
+          "USER TASK:",
+          prompt
+        ].join("\\n")
+      }),
+      signal: controller.signal
+    });
+
+    raw = await response.text();
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      payload = { raw };
+    }
+
+    if (response.ok || !retryableStatuses.has(response.status) || attempt === maxAttempts) break;
+
+    const retryAfter = Number(response.headers.get("retry-after"));
+    const delayMs = Number.isFinite(retryAfter) && retryAfter > 0
+      ? Math.min(retryAfter * 1000, 60_000)
+      : Math.min(5_000 * (2 ** (attempt - 1)), 60_000);
+    console.warn(`Temporary Gemini API HTTP ${response.status}; retry ${attempt}/${maxAttempts} in ${Math.ceil(delayMs / 1000)}s.`);
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 
+  const contentType = response.headers.get("content-type") || "";
   if (!response.ok) {
     const detail = payload?.error?.message || payload?.message || raw.slice(0, 1200);
-    throw new Error(`GitHub Models request failed (HTTP ${response.status}): ${detail}`);
+    throw new Error(`Gemini API request failed after ${maxAttempts} attempt(s) (HTTP ${response.status}): ${detail}`);
   }
 
   const message = payload?.choices?.[0]?.message;
