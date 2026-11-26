@@ -7,7 +7,8 @@
   "scripts": {
     "workers:generate": "node src/worker-registry.mjs",
     "test": "node --test",
-    "master:plan": "node src/master-plan.mjs"
+    "master:plan": "node src/master-plan.mjs",
+    "game:inspect": "node scripts/inspect-game-source.mjs"
   },
   "engines": {
     "node": ">=20"
