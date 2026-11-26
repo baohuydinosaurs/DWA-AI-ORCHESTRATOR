@@ -99,7 +99,7 @@ export function integrateGameHtml(html) {
 
   let output = html.replace(
     stepMarker,
-    "  const DWA_AI_POLICIES = new Map();\\n\\n" + stepMarker
+    `  const DWA_AI_POLICIES = new Map();\n\n${stepMarker}`
   );
 
   const stepEndMarker = "  function checkMatchEnded() {";
@@ -157,7 +157,7 @@ export function integrateGameHtml(html) {
   if (!stepSection.includes(skillCall)) throw new Error("Combat skill invocation was not found.");
   stepSection = stepSection.replace(
     skillCall,
-    "      const preferredSkill = aiPolicy?.skillPriority.find((skillId) => d.movePool.includes(skillId));\\n      triggerDinoSkill(d, enemies, preferredSkill);"
+    `      const preferredSkill = aiPolicy?.skillPriority.find((skillId) => d.movePool.includes(skillId));\n      triggerDinoSkill(d, enemies, preferredSkill);`
   );
   output = output.slice(0, stepStart) + stepSection + output.slice(stepEnd);
 
