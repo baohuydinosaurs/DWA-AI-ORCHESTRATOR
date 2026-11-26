@@ -6,7 +6,8 @@
   "description": "Dinosaur War Arena AI worker orchestration foundation",
   "scripts": {
     "workers:generate": "node src/worker-registry.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "master:plan": "node src/master-plan.mjs"
   },
   "engines": {
     "node": ">=20"
