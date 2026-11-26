@@ -95,7 +95,7 @@ export function integrateGameHtml(html) {
   if (html.split(stepMarker).length !== 2) throw new Error("Expected exactly one stepCombat integration point.");
   if (html.split(skillMarker).length !== 2) throw new Error("Expected exactly one triggerDinoSkill integration point.");
   const closeIndex = html.lastIndexOf(closeMarker);
-  if (closeIndex < 0 || html.indexOf(closeMarker) === closeIndex) throw new Error("Could not identify the game IIFE closing point.");
+  if (closeIndex < 0) throw new Error("Could not identify the game IIFE closing point.");
 
   let output = html.replace(
     stepMarker,
