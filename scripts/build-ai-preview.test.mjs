@@ -54,6 +54,9 @@ test("injects read-only snapshot and validated policy control without replacing 
   assert.match(output,/Nạp AI policy/);
   assert.match(output,/dwaPolicyFileInput/);
   assert.match(output,/await file\.text\(\)/);
+  assert.match(output,/Unknown policy fields/);
+  assert.match(output,/Duplicate skill IDs/);
+  assert.match(output,/schemaVersion 1/);
 });
 
 test("rejects an unknown game source layout instead of silently producing a broken preview",()=>{
