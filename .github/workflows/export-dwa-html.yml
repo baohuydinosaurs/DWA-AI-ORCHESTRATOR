@@ -1,0 +1,31 @@
+name: Export DWA standalone HTML
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/export-dwa-html.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/pixelfx-244-sketchup-assets
+      - name: Verify standalone HTML
+        run: |
+          test -s Dinosaur_War_Arena_Standalone.html
+          grep -q 'DWAPixelFX' Dinosaur_War_Arena_Standalone.html
+          wc -c Dinosaur_War_Arena_Standalone.html
+      - name: Upload HTML file
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dinosaur-War-Arena-Standalone-HTML
+          path: Dinosaur_War_Arena_Standalone.html
+          if-no-files-found: error
+          retention-days: 30
