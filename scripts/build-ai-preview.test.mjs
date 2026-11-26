@@ -53,7 +53,7 @@ test("injects read-only snapshot and validated policy control without replacing 
   assert.match(output,/DWA_AI_POLICIES\.set/);
   assert.match(output,/Nạp AI policy/);
   assert.match(output,/dwaPolicyFileInput/);
-  assert.match(output,/file\\.text\\(\\)/);
+  assert.match(output,/await file\.text\(\)/);
 });
 
 test("rejects an unknown game source layout instead of silently producing a broken preview",()=>{
