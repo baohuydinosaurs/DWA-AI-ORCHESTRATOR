@@ -58,3 +58,15 @@ test("rejects duplicate task ids",async(t)=>{
   await store.enqueue(task);
   await assert.rejects(store.enqueue(task),/Duplicate taskId/);
 });
+
+test("concurrent claims cannot lease the same task more than once",async(t)=>{
+  const store=await fixture(t);
+  await store.enqueue({taskId:"t-concurrent",workerId:"qa-parallel",roleId:"qa",description:"concurrent claim safety"});
+  const claims=await Promise.all(
+    Array.from({length:8},()=>store.claimNext("qa-parallel"))
+  );
+  const successful=claims.filter(Boolean);
+  assert.equal(successful.length,1);
+  assert.equal(successful[0].taskId,"t-concurrent");
+  assert.equal((await store.snapshot()).tasks[0].attempts,1);
+});
