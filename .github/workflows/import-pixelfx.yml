@@ -20,11 +20,17 @@ jobs:
         with:
           ref: integration/pixelfx-244-sketchup-assets
           fetch-depth: 0
-      - name: Fetch upstream PixelFX source and preserve notices
+      - name: Checkout upstream PixelFX
+        uses: actions/checkout@v4
+        with:
+          repository: patch-gg/pixelfx
+          ref: main
+          path: /tmp/pixelfx
+          persist-credentials: false
+      - name: Vendor source and verify all effects
         shell: bash
         run: |
           set -euo pipefail
-          git clone --depth 1 https://github.com/patch-gg/pixelfx.git /tmp/pixelfx
           mkdir -p vendor/pixelfx
           cp -R /tmp/pixelfx/src vendor/pixelfx/
           cp /tmp/pixelfx/LICENSE /tmp/pixelfx/NOTICE.md /tmp/pixelfx/README.md vendor/pixelfx/
