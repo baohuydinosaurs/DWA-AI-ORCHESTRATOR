@@ -30,5 +30,6 @@ jobs:
           name: dwa-pixelfx-single-html
           path: |
             artifacts/Dinosaur_War_Arena_PixelFX_Integrated.html
+            artifacts/PIXELFX-244-CORE-SOURCE.js
             artifacts/PIXELFX-BUILD-REPORT.json
           retention-days: 14
