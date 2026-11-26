@@ -39,9 +39,12 @@ jobs:
           EFFECT_COUNT=$(grep -F -c 'import * as' vendor/pixelfx/src/fx/index.js)
           test "$EFFECT_COUNT" -eq 244
           echo "Verified PixelFX effect imports: $EFFECT_COUNT"
+          npm install --no-save --no-package-lock esbuild@0.25.10 three@0.128.0
+          node scripts/test-pixelfx.mjs
+          node scripts/build-dwa-standalone.mjs
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add vendor/pixelfx
+          git add vendor/pixelfx scripts/build-dwa-standalone.mjs scripts/test-pixelfx.mjs src/dwa-pixelfx-entry.js Dinosaur_War_Arena_Standalone.html
           if git diff --cached --quiet; then
             echo "PixelFX source already current"
             exit 0
