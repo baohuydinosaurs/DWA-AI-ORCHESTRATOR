@@ -67,3 +67,14 @@ Thang điểm 100:
 ## 5. Tiêu chuẩn báo cáo
 Mỗi kết quả phải nêu: worker ID, nhiệm vụ, tệp đã đọc/sửa, thay đổi, lệnh kiểm thử đã chạy, kết quả thực tế, giới hạn chưa kiểm tra và artifact/log liên quan.
 Không bịa kết quả, không giả lập việc đã chạy AI, không coi hồ sơ worker là worker đang hoạt động.
+
+## 6. Phương án thi đấu 60 phút và hợp nhất năng lực
+- Tổng thời gian chính thức của một lượt thi: 60 phút.
+- Phân bổ: chuẩn bị 10 phút; vòng ngoài 15 phút; vòng trong 10 phút; tứ kết 8 phút; bán kết 8 phút; chung kết 6 phút; tổng kết/công bố 3 phút.
+- Sơ đồ nhánh vẫn là 100 → 20 → 8 → 4 → 2 → 1.
+- Kết quả/thứ hạng chỉ quyết định quyền đi tiếp của ứng viên trong nhánh thi; không quyết định việc xóa bỏ đóng góp kỹ thuật.
+- Mọi worker phải nộp Feature Contribution có worker ID, mô tả, tệp nguồn, test, tình trạng tương thích và artifact.
+- Tính năng độc đáo từ worker bị loại vẫn được giữ trong Feature Registry để xem xét.
+- Chỉ tích hợp tính năng khi tương thích, test riêng đạt, hồi quy bản tổng hợp đạt và không có xung đột chưa xử lý.
+- Bản vô địch là bản tổng hợp từ nhiều worker đã qua kiểm thử; không mặc nhiên lấy nguyên sản phẩm của worker đứng hạng nhất.
+- Hết 60 phút phải chốt snapshot và báo cáo. Nếu chưa đủ bằng chứng, trạng thái là chưa xác minh/không đạt cổng, không kéo dài bằng cách tự bịa kết quả.
