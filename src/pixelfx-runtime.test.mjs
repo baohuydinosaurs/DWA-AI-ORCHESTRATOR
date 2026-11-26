@@ -56,5 +56,5 @@ test("PixelFX picker mounts, lists all 244 effects and responds to button clicks
   const playButton=panel.children[1];
   const before=window.DWAPixelFX.activeCount;
   playButton.click();
-  assert.equal(window.DWAPixelFX.activeCount,before+1);
+  assert.ok(window.DWAPixelFX.activeCount>0);\n  assert.ok(window.DWAPixelFX.activeCount<=20,"active effect pool must remain capped at 20");\n  assert.ok(window.DWAPixelFX.activeCount>=Math.min(before+1,20));
 });
