@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "competition": {
     "entrants": 100,
     "stages": [
@@ -11,7 +11,55 @@
       1
     ],
     "groups": 10,
-    "workersPerGroup": 10
+    "workersPerGroup": 10,
+    "durationMinutes": 60,
+    "schedule": [
+      {
+        "id": "preparation",
+        "name": "Chuẩn bị và khởi tạo",
+        "minutes": 10,
+        "entrants": 100
+      },
+      {
+        "id": "outer-round",
+        "name": "Vòng ngoài",
+        "minutes": 15,
+        "entrants": 100
+      },
+      {
+        "id": "inner-round",
+        "name": "Vòng trong",
+        "minutes": 10,
+        "entrants": 20
+      },
+      {
+        "id": "quarterfinal",
+        "name": "Tứ kết",
+        "minutes": 8,
+        "entrants": 8
+      },
+      {
+        "id": "semifinal",
+        "name": "Bán kết",
+        "minutes": 8,
+        "entrants": 4
+      },
+      {
+        "id": "final",
+        "name": "Chung kết",
+        "minutes": 6,
+        "entrants": 2
+      },
+      {
+        "id": "announcement",
+        "name": "Tổng kết và công bố",
+        "minutes": 3,
+        "entrants": 1
+      }
+    ],
+    "selectionPolicy": "rankings-do-not-delete-unique-capabilities",
+    "eliminationMeaning": "removes-an-entry-from-the-next-bracket-only; its verified features remain eligible for the composite build",
+    "championDefinition": "verified-composite-build-of-compatible-best-features-not-the-highest-ranked-single-worker"
   },
   "scoring": [
     {
@@ -68,5 +116,21 @@
     "100 worker"
   ],
   "costPolicy": "no-paid-usage-without-explicit-owner-approval",
-  "dinosaurPolicy": "add-only-with-owner-provided-image-and-explicit-request"
+  "dinosaurPolicy": "add-only-with-owner-provided-image-and-explicit-request",
+  "featureHarvest": {
+    "enabled": true,
+    "retainFromEliminatedWorkers": true,
+    "registry": "feature-registry.jsonl",
+    "requiredEvidence": [
+      "workerId",
+      "featureId",
+      "description",
+      "sourceFiles",
+      "testsRun",
+      "compatibility",
+      "artifactRef"
+    ],
+    "mergePolicy": "accept-only-after-compatibility-and-regression-tests",
+    "preserveOriginalSource": true
+  }
 }
