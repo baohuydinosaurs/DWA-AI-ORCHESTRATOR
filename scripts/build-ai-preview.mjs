@@ -16,6 +16,10 @@ const bridge = `
       if (dinoId === undefined || dinoId === null || !policy || typeof policy !== "object") {
         throw new TypeError("dinoId and policy object are required.");
       }
+      const allowedPolicyFields = new Set(["targetMode", "tactic", "retreatBelowHpRatio", "skillPriority"]);
+      const unknownPolicyFields = Object.keys(policy).filter((key) => !allowedPolicyFields.has(key));
+      if (unknownPolicyFields.length) throw new Error("Unknown policy fields: " + unknownPolicyFields.join(", "));
+      if (typeof workerId !== "string" || !workerId.trim()) throw new Error("workerId is required.");
       const targetMode = policy.targetMode ?? "nearest";
       const tactic = policy.tactic ?? "balanced";
       const retreatBelowHpRatio = policy.retreatBelowHpRatio ?? 0.3;
@@ -25,9 +29,10 @@ const bridge = `
       if (!Number.isFinite(retreatBelowHpRatio) || retreatBelowHpRatio < 0.1 || retreatBelowHpRatio > 0.8) {
         throw new RangeError("retreatBelowHpRatio must be between 0.1 and 0.8.");
       }
-      if (!Array.isArray(skillPriority) || !skillPriority.every((item) => typeof item === "string")) {
-        throw new TypeError("skillPriority must be an array of skill IDs.");
+      if (!Array.isArray(skillPriority) || !skillPriority.every((item) => typeof item === "string" && item.trim())) {
+        throw new TypeError("skillPriority must contain non-empty skill IDs.");
       }
+      if (new Set(skillPriority).size !== skillPriority.length) throw new Error("Duplicate skill IDs are not allowed.");
       DWA_AI_POLICIES.set(String(dinoId), Object.freeze({
         workerId: String(workerId),
         targetMode,
@@ -38,11 +43,16 @@ const bridge = `
       return true;
     },
     loadPolicyBundle(bundle) {
-      if (!bundle || !Array.isArray(bundle.policies)) throw new TypeError("Policy bundle must contain a policies array.");
+      if (!bundle || bundle.schemaVersion !== 1 || !Array.isArray(bundle.policies)) {
+        throw new TypeError("Policy bundle must use schemaVersion 1 and contain a policies array.");
+      }
       const seen = new Set();
       for (const entry of bundle.policies) {
         if (!entry || entry.dinoId === undefined || seen.has(String(entry.dinoId))) {
           throw new Error("Policy bundle contains a missing or duplicate dinoId.");
+        }
+        if (typeof entry.workerId !== "string" || !entry.workerId.trim()) {
+          throw new Error("Every policy entry must include workerId provenance.");
         }
         seen.add(String(entry.dinoId));
         this.setPolicy(entry.dinoId, entry.policy, entry.workerId);
