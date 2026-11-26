@@ -1,0 +1,51 @@
+name: Run one real DWA AI worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Nhiệm vụ dành cho AI worker (tiếng Việt)"
+        required: true
+        type: string
+      model:
+        description: "GitHub Models model ID"
+        required: false
+        default: "openai/gpt-4o"
+        type: string
+
+permissions:
+  contents: read
+  models: read
+
+concurrency:
+  group: dwa-single-ai-worker
+  cancel-in-progress: false
+
+jobs:
+  run-one-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Execute real model inference
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DWA_TASK: ${{ inputs.task }}
+          DWA_MODEL: ${{ inputs.model }}
+        run: node src/ai-worker.mjs
+
+      - name: Upload AI worker result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dwa-ai-worker-result
+          path: artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
