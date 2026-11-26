@@ -17,6 +17,12 @@
 - Đã tạo prototype browser AI policy bridge trong hai preview riêng. Hỗ trợ target nearest/weakest/strongest, tactic balanced/aggressive/evasive và ưu tiên skill; không gọi model/API trong vòng lặp frame.
 - GitHub Actions run #77 hoàn tất SUCCESS: unit tests, kiểm tra cú pháp, phân tích HTML, build hai preview và upload artifact thành công.
 
+- Đã thêm schema validator cho policy và bundle, kiểm tra enum, ngưỡng HP, skill ID, dinoId duy nhất và worker provenance.
+- Có tệp `config/demo-policy-bundle.json` để thử loader; đây là policy mẫu viết tay, không phải kết quả inference AI.
+- Hai preview có nút **Nạp AI policy** và **Xóa policy**, cho phép chọn JSON trực tiếp từ bộ nhớ điện thoại.
+- GitHub Actions run #93 SUCCESS: npm tests, game source inspection, build hai preview, policy validation và upload artifact đều thành công.
+- Artifact mới nhất: https://github.com/baohuydinosaurs/DWA-AI-ORCHESTRATOR/actions/runs/45767569807/artifacts/15093110183 (hết hạn dự kiến 2026-12-03).
+
 ## Chưa được xác nhận
 - Chưa có 100 tiến trình AI thực sự đang chạy; 100 worker hiện là 100 danh tính/hồ sơ được đăng ký.
 - Chưa xác minh một lần suy luận Gemini API thành công. API trước đây từng trả HTTP 503; quota/free-tier cần được xác nhận trước khi chạy.
