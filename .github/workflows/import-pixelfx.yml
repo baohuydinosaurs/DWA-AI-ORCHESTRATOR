@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: dwa-pixelfx-standalone
+  cancel-in-progress: true
+
 jobs:
   vendor-pixelfx:
     runs-on: ubuntu-latest
@@ -51,4 +55,6 @@ jobs:
             exit 0
           fi
           git commit -m "Vendor all 244 PixelFX effects with MIT notices"
+          git fetch origin integration/pixelfx-244-sketchup-assets
+          git rebase origin/integration/pixelfx-244-sketchup-assets
           git push origin HEAD:integration/pixelfx-244-sketchup-assets
