@@ -25,17 +25,17 @@ jobs:
         with:
           repository: patch-gg/pixelfx
           ref: main
-          path: /tmp/pixelfx
+          path: vendor-upstream
           persist-credentials: false
       - name: Vendor source and verify all effects
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p vendor/pixelfx
-          cp -R /tmp/pixelfx/src vendor/pixelfx/
-          cp /tmp/pixelfx/LICENSE /tmp/pixelfx/NOTICE.md /tmp/pixelfx/README.md vendor/pixelfx/
+          cp -R vendor-upstream/src vendor/pixelfx/
+          cp vendor-upstream/LICENSE vendor-upstream/NOTICE.md vendor-upstream/README.md vendor/pixelfx/
           mkdir -p vendor/pixelfx/docs
-          cp /tmp/pixelfx/docs/CATALOG.md vendor/pixelfx/docs/
+          cp vendor-upstream/docs/CATALOG.md vendor/pixelfx/docs/
           EFFECT_COUNT=$(grep -c '^import \\* as ' vendor/pixelfx/src/fx/index.js)
           test "$EFFECT_COUNT" -eq 244
           echo "Verified PixelFX effect imports: $EFFECT_COUNT"
