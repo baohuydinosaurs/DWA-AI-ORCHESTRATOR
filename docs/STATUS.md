@@ -23,6 +23,11 @@
 - Bổ sung `src/gemini-adapter.mjs` để đọc đúng phản hồi Gemini Interactions API dạng `steps[].type = "model_output"`, đồng thời giữ tương thích với các dạng phản hồi khác.
 - AI worker chuyển sang yêu cầu stateless (`store: false`) và tách system instruction khỏi nội dung tác vụ. Thay đổi này mới được kiểm tra bằng unit tests/CI; chưa gọi API thật để tránh sử dụng quota/billing khi chưa xác minh chính sách miễn phí.
 
+
+- Đã thêm công cụ kiểm tra tĩnh hai HTML gốc vào CI; GitHub Actions run #61 thành công. Báo cáo chi tiết: `docs/GAME-SOURCE-INSPECTION.md`.
+- Kết quả: mỗi HTML có 4 canvas, dùng Three.js r128/WebGL, requestAnimationFrame và Web Audio API; không phát hiện MediaRecorder/captureStream/localStorage/IndexedDB trong mã game.
+- Hai HTML không giống nhau: cùng 7,612,651 ký tự đầu và 87,429 ký tự cuối; phiên bản VFX_Shader_Audio lớn hơn 6,113 bytes. Chưa chọn bản chuẩn và không chỉnh sửa tệp gốc.
+
 ## Chưa được xác nhận
 - Chưa có 100 tiến trình AI thực sự đang chạy; 100 worker hiện là 100 danh tính/hồ sơ được đăng ký.
 - Chưa xác minh một lần suy luận Gemini API thành công trong workflow. Trước đây API từng trả HTTP 503.
