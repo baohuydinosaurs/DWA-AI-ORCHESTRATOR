@@ -58,3 +58,10 @@ jobs:
           git fetch origin integration/pixelfx-244-sketchup-assets
           git rebase origin/integration/pixelfx-244-sketchup-assets
           git push origin HEAD:integration/pixelfx-244-sketchup-assets
+      - name: Upload standalone HTML for direct download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dinosaur-War-Arena-Standalone-HTML
+          path: Dinosaur_War_Arena_Standalone.html
+          if-no-files-found: error
+          retention-days: 30
