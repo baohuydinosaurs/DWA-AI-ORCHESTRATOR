@@ -49,10 +49,10 @@ window.DWA_AI.loadPolicyBundle({
 });
 ```
 
-## Build và kiểm thử
+## Tệp policy demo\n\n- `config/demo-policy-bundle.json` là ví dụ thủ công để thử nút nạp JSON trên điện thoại. Các workerId đều có tiền tố `demo-policy-not-live-ai-`; đây không phải kết quả inference hay 4 AI đang chạy.\n- Tệp demo áp dụng cho roster slot ID 0–3. Nếu roster khác, cần đổi dinoId cho khớp snapshot game.\n\n## Build và kiểm thử
 
 - `npm run game:preview` tạo hai file preview trong `artifacts/dwa-ai-preview/`.
-- Unit tests kiểm tra biến đổi source, bridge, policy hooks và cú pháp JavaScript sau khi build.
+- Unit tests kiểm tra biến đổi source, bridge, policy hooks, schema policy và cú pháp JavaScript sau khi build.\n- `npm run policy:validate` xác thực tệp demo theo schema trước khi upload preview.
 - GitHub Actions run #77 đã thành công; artifact `dwa-ai-integration-preview` chứa cả hai preview HTML.
 - Artifact URL: https://github.com/baohuydinosaurs/DWA-AI-ORCHESTRATOR/actions/runs/45767179727/artifacts/15092153050
 - Artifact giữ 7 ngày, dự kiến hết hạn 2026-12-03.
