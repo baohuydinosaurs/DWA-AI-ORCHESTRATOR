@@ -1,5 +1,14 @@
 # DWA AI Orchestrator — trạng thái triển khai
 
+
+## Xác minh mới nhất — 2026-11-26
+- GitHub Actions run #100 (ID: `45774050941`, commit `8e6897377db4d4a055efc4521e36d174ac814cb0`) hoàn tất `success`.
+- Kết quả test: **43 passed, 0 failed**.
+- Các bước cú pháp `ai-worker.mjs`, `task-runner.mjs`, `gemini-adapter.mjs`, tạo Master Plan, kiểm tra hai HTML, build preview, validate policy và xác minh Master Plan đều thành công.
+- Master Plan xác nhận **100 worker identities / 10 team leads**; đây không phải 100 model inference đang chạy.
+- Artifact `dwa-ai-integration-preview` đã được upload thành công (16,298,476 bytes; chưa hết hạn tại thời điểm xác minh): https://github.com/baohuydinosaurs/DWA-AI-ORCHESTRATOR/actions/runs/45774050941
+- Log ghi rõ: `Model inference remains unconfigured.` Do đó chưa thể tuyên bố AI worker thật đã suy luận thành công hoặc policy đã được tạo bởi Gemini.
+
 ## Đã triển khai và có bằng chứng
 - Quy định cốt lõi: `docs/DWA-CORE-DIRECTIVE.md`.
 - Cấu trúc danh tính 100 worker thuộc 10 nhóm chuyên môn; registry ghi rõ đây là hồ sơ worker, không giả nhận chúng là tiến trình AI đang chạy.
