@@ -42,13 +42,15 @@ test("requeues expired leases and permits retry",async(t)=>{
 test("writes and restores a durable checkpoint",async(t)=>{
   const store=await fixture(t);
   await store.enqueue({taskId:"t-4",workerId:"visuals-001",roleId:"visuals",description:"inspect"});
+  await store.claimNext("visuals-001");
   const checkpoint=await store.checkpoint({reason:"test"});
   assert.equal(checkpoint.sha256.length,64);
   await store.complete("t-4","visuals-001",{summary:"after checkpoint"});
   const restored=await store.restoreCheckpoint();
   assert.equal(restored.taskCount,1);
   const state=await store.snapshot();
-  assert.equal(state.tasks[0].status,"queued");
+  assert.equal(state.tasks[0].status,"running");
+  assert.equal(state.tasks[0].lease.owner,"visuals-001");
 });
 test("rejects duplicate task ids",async(t)=>{
   const store=await fixture(t);
