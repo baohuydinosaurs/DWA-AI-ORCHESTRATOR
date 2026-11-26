@@ -39,6 +39,7 @@ jobs:
           EFFECT_COUNT=$(grep -F -c 'import * as' vendor/pixelfx/src/fx/index.js)
           test "$EFFECT_COUNT" -eq 244
           echo "Verified PixelFX effect imports: $EFFECT_COUNT"
+          echo "Building single-file DWA distribution."
           npm install --no-save --no-package-lock esbuild@0.25.10 three@0.128.0
           node scripts/test-pixelfx.mjs
           node scripts/build-dwa-standalone.mjs
