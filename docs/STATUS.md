@@ -1,55 +1,44 @@
 # DWA AI Orchestrator — trạng thái triển khai
 
-## Đã triển khai
+## Đã triển khai và có bằng chứng
 - Quy định cốt lõi: `docs/DWA-CORE-DIRECTIVE.md`.
 - Cấu trúc danh tính 100 worker thuộc 10 nhóm chuyên môn; registry ghi rõ đây là hồ sơ worker, không giả nhận chúng là tiến trình AI đang chạy.
 - Master Orchestrator kiểm tra luật, tạo kế hoạch, phân công tác vụ và xác thực báo cáo.
 - Cuộc thi 60 phút được cấu hình thành 7 chặng: chuẩn bị 10', vòng ngoài 15', vòng trong 10', tứ kết 8', bán kết 8', chung kết 6', công bố 3'.
 - Nhánh thi đấu dùng các mốc 100 → 20 → 8 → 4 → 2 → 1.
-- Thứ hạng chỉ quyết định suất đi tiếp trong nhánh; không tự động xóa tính năng có giá trị của worker bị loại.
-- Có chức năng ghi nhận tính năng độc đáo, giữ nguồn gốc worker, tệp nguồn và bằng chứng kiểm thử.
-- Có cổng tích hợp: tương thích, test riêng, hồi quy toàn hệ thống và không xung đột.
-- Nhà vô địch được định nghĩa là bản tổng hợp các tính năng tốt nhất đã xác minh, không phải mã nguồn của một AI duy nhất.
+- Thứ hạng chỉ quyết định suất đi tiếp; không tự động xóa tính năng có giá trị của worker bị loại.
+- Có cơ chế ghi nhận feature, giữ nguồn gốc worker và chỉ tích hợp khi tương thích, test riêng, hồi quy và không xung đột.
 - Có module ghi hình WebM bằng MediaRecorder và metadata theo chặng; module không tự bật camera/micro.
-- Có task queue JSON với claim/lease, event log, checkpoint và restore.
-- Có task runner xử lý tối đa một tác vụ cho worker được chỉ định; có test cho hoàn tất, cô lập worker, lỗi executor và kết quả rỗng.
-- Hai tệp HTML game gốc hiện diện trong repository:
-  - `BAOHUY_Dinosaur_War_Arena_Enhanced.html`
-  - `BAOHUY_Dinosaur_War_Arena_VFX_Shader_Audio.html`
-- GitHub Actions workflow `Validate DWA Orchestrator`, run #44, đã hoàn tất với kết quả `success` trong khoảng 12 giây. Các bước npm test, kiểm tra cú pháp hai module worker/task-runner và tạo/xác minh kế hoạch Master AI đều thành công.
-
-
-- Task queue đã có gia hạn lease; task runner gửi heartbeat trong khi executor chạy lâu. CI run #50 xác nhận bộ test queue/runner và kiểm tra cú pháp thành công.
-- Bổ sung `src/gemini-adapter.mjs` để đọc đúng phản hồi Gemini Interactions API dạng `steps[].type = "model_output"`, đồng thời giữ tương thích với các dạng phản hồi khác.
-- AI worker chuyển sang yêu cầu stateless (`store: false`) và tách system instruction khỏi nội dung tác vụ. Thay đổi này mới được kiểm tra bằng unit tests/CI; chưa gọi API thật để tránh sử dụng quota/billing khi chưa xác minh chính sách miễn phí.
-
-
-- Đã thêm công cụ kiểm tra tĩnh hai HTML gốc vào CI; GitHub Actions run #61 thành công. Báo cáo chi tiết: `docs/GAME-SOURCE-INSPECTION.md`.
-- Kết quả: mỗi HTML có 4 canvas, dùng Three.js r128/WebGL, requestAnimationFrame và Web Audio API; không phát hiện MediaRecorder/captureStream/localStorage/IndexedDB trong mã game.
-- Hai HTML không giống nhau: cùng 7,612,651 ký tự đầu và 87,429 ký tự cuối; phiên bản VFX_Shader_Audio lớn hơn 6,113 bytes. Chưa chọn bản chuẩn và không chỉnh sửa tệp gốc.
+- Có task queue JSON với claim/lease, event log, checkpoint/restore, khóa một-writer và test.
+- Task runner xử lý một task mỗi lần chạy; lease heartbeat gia hạn quyền xử lý trong tác vụ dài. Unit tests kiểm tra hoàn tất, cô lập worker, lỗi executor, heartbeat và claim đồng thời.
+- Có Gemini Interactions adapter đọc cấu trúc model_output; AI worker gửi stateless request với store=false. Chưa có inference thật được xác minh.
+- Đã thêm công cụ kiểm tra tĩnh hai HTML gốc: mỗi file có 4 canvas, dùng Three.js r128/WebGL, requestAnimationFrame và Web Audio API.
+- Đã so sánh hai HTML gốc: khác nhau ở phần inline script, có chung 7,612,651 ký tự đầu và 87,429 ký tự cuối; VFX_Shader_Audio lớn hơn 6,113 bytes. Chưa chọn bản chuẩn.
+- Đã tạo prototype browser AI policy bridge trong hai preview riêng. Hỗ trợ target nearest/weakest/strongest, tactic balanced/aggressive/evasive và ưu tiên skill; không gọi model/API trong vòng lặp frame.
+- GitHub Actions run #77 hoàn tất SUCCESS: unit tests, kiểm tra cú pháp, phân tích HTML, build hai preview và upload artifact thành công.
 
 ## Chưa được xác nhận
 - Chưa có 100 tiến trình AI thực sự đang chạy; 100 worker hiện là 100 danh tính/hồ sơ được đăng ký.
-- Chưa xác minh một lần suy luận Gemini API thành công trong workflow. Trước đây API từng trả HTTP 503.
-- Hai HTML gốc có dung lượng khoảng 11 MB mỗi tệp; nội dung chưa được phân tích đầy đủ trong phiên kiểm tra này. Chưa tạo bản sao làm việc hoặc sửa đổi hai tệp gốc.
-- Chưa tích hợp task runner với adapter AI thật và queue trong một luồng end-to-end.
-- Chưa gắn recorder vào game/dashboard; chưa có video thi đấu thực tế được ghi.
-- Chưa chạy kiểm thử gameplay/trình duyệt/Android; cần xác minh MediaRecorder/WebM, dung lượng và phát lại trên thiết bị mục tiêu.
+- Chưa xác minh một lần suy luận Gemini API thành công. API trước đây từng trả HTTP 503; quota/free-tier cần được xác nhận trước khi chạy.
+- Chưa nối task runner → queue → Gemini inference → policy JSON → game trong một luồng end-to-end.
+- Hai preview HTML mới chỉ qua kiểm tra biến đổi source và cú pháp JavaScript; chưa chạy thử trong trình duyệt, chưa kiểm thử gameplay, hiệu năng hoặc Android.
+- Chưa gắn recorder vào canvas game; chưa có video thi đấu thực tế được ghi.
 - Chưa có bản phát hành game hoàn chỉnh.
 
-## Giới hạn kỹ thuật hiện tại
-- Queue JSON dùng khóa thư mục và chỉ phù hợp một Node host/tiến trình ghi tại một thời điểm; không dùng như hàng đợi phân tán cho nhiều GitHub runners độc lập.
-- Lease mặc định là 5 phút; worker chạy lâu hơn cần cơ chế gia hạn lease hoặc giới hạn thời gian thực thi để tránh tác vụ bị nhận lại khi vẫn đang chạy.
+## Giới hạn kỹ thuật
+- Queue JSON dùng khóa thư mục và chỉ phù hợp một Node host/tiến trình ghi tại một thời điểm; không dùng như hàng đợi phân tán nhiều GitHub runners độc lập.
+- Lease mặc định 5 phút; task runner hiện có heartbeat gia hạn lease.
 - GitHub Actions chạy theo từng workflow, không phải hệ thống worker nền 24/7.
-- API Gemini có quota và độ sẵn sàng thay đổi. Không bật paid usage hoặc billing để vượt hạn mức.
+- Gemini API có quota và độ sẵn sàng thay đổi. Không bật paid usage/billing để vượt hạn mức.
+- Hai HTML gốc không bị sửa. Preview được tạo thành artifact riêng và có thời hạn tải xuống.
 
 ## Cổng kế tiếp
-1. Phân tích hai HTML gốc theo bản sao làm việc, không ghi đè bản gốc.
-2. Tạo adapter AI có thể kiểm thử độc lập và xác minh một lần inference thật bằng model miễn phí, nếu quota khả dụng.
-3. Nối task runner → queue → adapter AI → kết quả có cấu trúc → kiểm tra bằng chứng.
-4. Bổ sung gia hạn lease/timeout và test cho tác vụ chạy dài.
-5. Gắn recorder vào game canvas/dashboard và kiểm tra video thật.
-6. Mở rộng theo cổng 1 → 2 → 5 → 10 → 100 worker; chỉ tăng khi cổng trước ổn định.
+1. Kiểm thử hai preview trên trình duyệt Android và xác nhận UI/gameplay không lỗi.
+2. Tạo structured output schema cho AI policy, validate dữ liệu và gắn workerId/source evidence.
+3. Nối task runner → queue → Gemini adapter → policy bundle; chỉ chạy một worker thật nếu free quota khả dụng.
+4. Gắn recorder vào canvas 2D và renderer canvas 3D, lưu video theo từng chặng và kiểm thử dung lượng/phát lại.
+5. Đo FPS, frame time, bộ nhớ và GPU trên Android trước khi mở rộng số worker.
+6. Mở rộng theo cổng 1 → 2 → 5 → 10 → 100; không coi 100 worker identities là 100 inference process.
 
 ## Bất biến
 - Không tự thêm loài khủng long.
