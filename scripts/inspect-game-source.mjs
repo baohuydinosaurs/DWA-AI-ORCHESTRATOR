@@ -59,6 +59,23 @@ for (const relativePath of files) {
     functionNames,
     classNames
   };
+
+  const integrationHooks = [
+    "createDinosaurRoster",
+    "stepCombat",
+    "triggerDinoSkill",
+    "startMatch",
+    "stopMatch",
+    "mainLoop",
+    "draw2D",
+    "render3D",
+    "init3D"
+  ];
+  report.integrationSnippets = Object.fromEntries(integrationHooks.map((name) => {
+    const pattern = new RegExp(`function\\s+${name}\\s*\\([^)]*\\)\\s*\\{`);
+    const match = pattern.exec(html);
+    return [name, match ? html.slice(match.index, match.index + 900) : null];
+  }));
   console.log(JSON.stringify(report, null, 2));
 }
 
