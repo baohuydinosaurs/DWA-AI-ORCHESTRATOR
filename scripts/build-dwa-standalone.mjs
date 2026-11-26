@@ -164,7 +164,7 @@ if (!html.includes(mainMarker)) throw new Error("Could not find main game script
 html = html.replace(mainMarker, "<script>" + bundle + "</script>\n" + mainMarker);
 
 if (/\<script\s+src=/i.test(html)) throw new Error("Standalone HTML still contains an external script dependency.");
-const inlineScripts = [...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)].map(match => match[1]).filter(code => code.trim());
+const inlineScripts = [...html.matchAll(/<script[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(match => match[1]).filter(code => code.trim());
 for (let i = 0; i < inlineScripts.length; i++) {
   try { new Function(inlineScripts[i]); }
   catch (error) { throw new Error(`Inline script ${i + 1} failed syntax validation: ${error.message}`); }
