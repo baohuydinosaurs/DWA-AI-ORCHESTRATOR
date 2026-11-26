@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+      - name: Inspect original DWA game hooks and species roster
+        run: mkdir -p artifacts && node scripts/inspect-game-source.mjs > artifacts/game-source-inspection.txt
       - name: Test all 244 PixelFX modules and DWA modules
         run: npm test
       - name: Bundle all PixelFX modules for browser
@@ -32,4 +34,5 @@ jobs:
             artifacts/Dinosaur_War_Arena_PixelFX_Integrated.html
             artifacts/PIXELFX-244-CORE-SOURCE.js
             artifacts/PIXELFX-BUILD-REPORT.json
+            artifacts/game-source-inspection.txt
           retention-days: 14
