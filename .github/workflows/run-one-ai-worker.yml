@@ -8,14 +8,13 @@ on:
         required: true
         type: string
       model:
-        description: "GitHub Models model ID"
+        description: "Gemini model ID"
         required: false
-        default: "openai/gpt-4o"
+        default: "gemini-3.8-flash"
         type: string
 
 permissions:
   contents: read
-  models: read
 
 concurrency:
   group: dwa-single-ai-worker
@@ -34,9 +33,9 @@ jobs:
         with:
           node-version: 24
 
-      - name: Execute real model inference
+      - name: Execute real Gemini model inference
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DWA_TASK: ${{ inputs.task }}
           DWA_MODEL: ${{ inputs.model }}
         run: node src/ai-worker.mjs
